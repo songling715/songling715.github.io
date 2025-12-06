@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>我的个人博客</title>
+  <icon>https://songling715.github.io/img/avatar.png</icon>
+  <subtitle>这是副标题</subtitle>
+  <link href="https://songling715.github.io/atom.xml" rel="self"/>
+  
+  <link href="https://songling715.github.io/"/>
+  <updated>2025-12-06T15:37:37.780Z</updated>
+  <id>https://songling715.github.io/</id>
+  
+  <author>
+    <name>songling</name>
+    
+  </author>
+  
+  <generator uri="https://hexo.io/">Hexo</generator>
+  
+  <entry>
+    <title>模板</title>
+    <link href="https://songling715.github.io/2025/12/06/%E2%80%9C%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87Hexo%E5%8D%9A%E5%AE%A2%E2%80%9D/"/>
+    <id>https://songling715.github.io/2025/12/06/%E2%80%9C%E6%88%91%E7%9A%84%E7%AC%AC%E4%B8%80%E7%AF%87Hexo%E5%8D%9A%E5%AE%A2%E2%80%9D/</id>
+    <published>2025-12-06T03:17:42.000Z</published>
+    <updated>2025-12-06T15:37:37.780Z</updated>
+    
+    
+    <summary type="html">编辑博客的测试文章</summary>
+    
+    
+    
+    <category term="test" scheme="https://songling715.github.io/categories/test/"/>
+    
+    
+    <category term="test" scheme="https://songling715.github.io/tags/test/"/>
+    
+  </entry>
+  
+  <entry>
+    <title>Hello World</title>
+    <link href="https://songling715.github.io/2025/12/06/hello-world/"/>
+    <id>https://songling715.github.io/2025/12/06/hello-world/</id>
+    <published>2025-12-06T03:07:51.897Z</published>
+    <updated>2025-12-06T03:07:51.897Z</updated>
+    
+    
+      
+      
+        
+        
+    <summary type="html">&lt;p&gt;Welcome to &lt;a href=&quot;https://hexo.io/&quot;&gt;Hexo&lt;/a&gt;! This is your very first post. Check &lt;a href=&quot;https://hexo.io/docs/&quot;&gt;documentation&lt;/a&gt;</summary>
+        
+      
+    
+    
+    
+    
+  </entry>
+  
+</feed>
