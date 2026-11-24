@@ -5,8 +5,8 @@
 
 **线上地址**
 
-- GitHub Pages：<https://songling715.github.io> ✅ 已上线
-- Cloudflare Pages：<https://songling715.pages.dev> ⏳ 待完成授权后部署（见文末）
+- Cloudflare Pages（主站）：<https://songling715.pages.dev>
+- GitHub Pages（镜像）：<https://songling715.github.io>
 
 ---
 
@@ -62,20 +62,22 @@ Argon 主题支持的额外文章参数：
 
 ## 发布
 
-```bash
-npm run deploy
-```
+**最简单的方式：双击项目根目录的 `发布.bat`。** 它会自动构建、上传到 Cloudflare、并把源码推到 GitHub。
 
-它做两件事：`hexo generate` 生成静态文件 → 把 `public/` 上传到 Cloudflare Pages。
-几十秒后 <https://songling715.pages.dev> 就是最新的。
-
-另外，**push 到 GitHub 会自动触发 GitHub Pages 部署**，作为备用镜像，不用管它。
+命令行等价操作：
 
 ```bash
+npm run deploy      # 构建 + 上传到 Cloudflare Pages
 git add -A
 git commit -m "新增文章：xxx"
-git push
+git push            # 同时更新 GitHub Pages 镜像
 ```
+
+`npm run deploy` 做两件事：`hexo generate` 生成静态文件 → 把 `public/` 上传到 Cloudflare Pages。
+几十秒后 <https://songling715.pages.dev> 就是最新的。
+
+**为什么两个平台都要发？** Cloudflare 是主站（国内直连更快，实测首屏 4~5 秒）；
+GitHub Pages 是备份镜像，Cloudflare 出问题或者被墙时还能访问。push 自动更新镜像，不用额外操作。
 
 ## 目录结构
 
