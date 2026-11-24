@@ -1,0 +1,95 @@
+# Hexo 站点配置
+# 文档: https://hexo.io/docs/configuration
+
+# 站点信息
+title: songling715 的博客
+subtitle: '记录 · 思考 · 沉淀'
+description: 'songling715 的个人技术博客，记录安全研究、编程实践与日常折腾。'
+keywords: 安全, Web安全, 渗透测试, 编程, 读书笔记
+author: songling715
+language: zh-CN
+timezone: Asia/Shanghai
+
+# URL
+# 部署到 Cloudflare Pages 后，把 url 改成你的正式地址
+url: https://songling715.pages.dev
+root: /
+permalink: :year/:month/:day/:title/
+permalink_defaults:
+pretty_urls:
+  trailing_index: false
+  trailing_html: false
+
+# 目录
+source_dir: source
+public_dir: public
+tag_dir: tags
+archive_dir: archives
+category_dir: categories
+code_dir: downloads/code
+i18n_dir: :lang
+skip_render:
+  - 'uploads/**'
+
+# 写作
+new_post_name: :year-:month-:day-:title.md
+default_layout: post
+titlecase: false
+external_link:
+  enable: true
+  field: site
+  exclude: ''
+filename_case: 0
+render_drafts: false
+post_asset_folder: true
+relative_link: false
+future: true
+
+# 代码高亮
+# 留空 = 关闭 Hexo 自带高亮，交给 Argon 主题的 highlight.js 在前端渲染
+# （自带行号、复制、折行、全屏按钮）。若开启 Hexo 高亮，会生成
+# <figure><table> 结构，与主题样式冲突，代码块会错位。
+syntax_highlighter: ''
+highlight:
+  enable: false
+  line_number: false
+  auto_detect: false
+  tab_replace: '    '
+  wrap: false
+  hljs: false
+prismjs:
+  enable: false
+  preprocess: false
+  line_number: false
+  tab_replace: ''
+
+# 首页与分页
+index_generator:
+  path: ''
+  per_page: 8
+  order_by: -date
+per_page: 8
+pagination_dir: page
+
+# 主题
+theme: argon
+
+# 搜索（Argon 主题依赖）
+search:
+  path: search.xml
+  field: post
+  content: true
+
+# RSS
+feed:
+  type: atom
+  path: atom.xml
+  limit: 20
+  content: true
+
+# 站点地图
+sitemap:
+  path: sitemap.xml
+  rel: false
+  tags: true
+  categories: true

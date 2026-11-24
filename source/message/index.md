@@ -1,0 +1,10 @@
+---
+title: 留言板
+date: 2026-11-24 16:25:00
+---
+
+想说点什么都可以留在这里——建议、纠错、想看的选题，或者只是打个招呼。
+
+如果评论框没有加载出来，可能是网络问题，刷新一下；也可以直接去 [GitHub](https://github.com/songling715) 找我。
+
+<div class="giscus" style="margin-top:24px"></div>

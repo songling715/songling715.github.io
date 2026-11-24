@@ -1,0 +1,143 @@
+# ===== Argon 主题配置（站点级覆盖，主题更新不会丢失） =====
+
+# 全局
+theme_color: '#5e72e4'
+show_customize_theme_color_picker: true
+darkmode_autoswitch: 'time'
+enable_amoled_dark: false
+card_radius: 15
+card_shadow:
+font: sans-serif
+enable_headroom: true
+
+# 顶栏
+toolbar_icon: ''
+toolbar_icon_link: ''
+toolbar_title: 'songling715'
+toolbar_menu:
+  首页: /
+  归档: /archives/
+  关于: /about/
+  留言板: /message/
+
+# Banner
+banner_title: 'songling715 的博客'
+enable_banner_title_typing_effect: true
+banner_typing_effect_interval: 120
+banner_subtitle: '把踩过的坑，都留在文字里。'
+banner_background_url: '/img/cover.jpg'
+banner_background_hide_shapes: true
+banner_background_color_type: 'shape-primary'
+
+# 侧栏
+sidebar_banner_title: '公告栏'
+sidebar_banner_subtitle: '慢慢来，比较快。'
+sidebar_announcement: ''
+leftbar_menu:
+  首页: /
+  归档: /archives/
+  关于: /about/
+  留言板: /message/
+sidebar_auther_image: '/img/avatar.svg'
+sidebar_auther_name: 'songling715'
+leftbar_author_links:
+  GitHub: 'https://github.com/songling715'
+  RSS: '/atom.xml'
+leftbar_friend_links:
+show_headindex_number: true
+
+# 文章
+excerpt: true
+first_image_as_thumbnail: false
+article_meta: 'time|categories|words|readingtime'
+reading_speed_cn: 300
+reading_speed_en: 160
+donate_qrcode_url: ''
+additional_content_after_post: ''
+article_header_style: default
+
+# 背景
+page_background_url: '/img/cover.jpg'
+page_background_dark_url: '/img/cover.jpg'
+page_background_opacity: 0.7
+transparent_banner: true
+show_toolbar_mask: true
+
+# 浮动操作按钮
+fab_show_darkmode_button: true
+fab_show_settings_button: true
+fab_show_gotocomment_button: true
+
+# 平滑滚动
+smoothscroll: 1
+
+# Zoomify
+enable_zoomify: true
+zoomify_duration: 200
+zoomify_easing: cubic-bezier(0.4,0,0,1)
+zoomify_scale: 0.9
+
+# Lazyload
+enable_lazyload: true
+lazyload_threshold: 800
+lazyload_effect: fadeIn
+lazyload_loading_style: 1
+
+# Pangu.js（中英文之间自动加空格）
+enable_pangu: true
+
+# 其他
+pjax_disabled: false
+enable_into_article_animation: false
+enable_mobile_scale: false
+
+# 页脚
+footer_html: '<div style="text-align:center">© 2026 songling715 · 由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 与 <a href="https://github.com/solstice23/hexo-theme-argon" target="_blank" rel="noopener">Argon</a> 驱动 · 托管于 Cloudflare</div>'
+
+# 数学公式（需要时改成 mathjax3 或 katex）
+math_render: ''
+mathjax_cdn_url: //cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js
+argon_mathjax_v2_cdn_url: //cdn.jsdelivr.net/npm/mathjax@2.7.5/MathJax.js?config=TeX-AMS_HTML
+katex_cdn_url: //cdn.jsdelivr.net/npm/katex@0.11.1/dist/
+
+# 代码高亮
+enable_code_highlight: true
+code_theme: vs2015
+
+# 脚本
+custom_html_head: ''
+custom_html_foot: ''
+
+# 评论（GitHub Discussions，免费无需服务器；配置步骤见 README）
+gitalk:
+  enable: false
+  owner: ''
+  repo: ''
+  admin: ''
+  clientID: ''
+  clientSecret: ''
+giscus:
+  enable: false
+  repo: 'songling715/blog'
+  repo_id: ''
+  category: 'Announcements'
+  category_id: ''
+  mapping: 'pathname'
+  input_position: 'top'
+  theme: 'light'
+  lang: 'zh-CN'
+waline:
+  enable: false
+  server_url: ''
+twikoo:
+  enable: false
+  envID: ' '
+  lang: 'zh-CN'
+
+# 分析
+baidu_analytics:
+  enable: false
+  id: ''
+gtag:
+  enable: false
+  id: ''
