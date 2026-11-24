@@ -18,7 +18,7 @@ baidu_site_verification: ''
 
 # URL
 # 部署到 Cloudflare Pages 后，把 url 改成你的正式地址
-url: https://songling715.pages.dev
+url: https://songling715.dpdns.org
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:

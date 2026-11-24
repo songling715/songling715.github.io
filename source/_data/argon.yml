@@ -117,7 +117,7 @@ gitalk:
   clientID: ''
   clientSecret: ''
 giscus:
-  enable: false
+  enable: true
   repo: 'songling715/songling715.github.io'
   repo_id: 'R_kgDOV50uFg'
   category: 'Announcements'

@@ -178,6 +178,20 @@ hexo.extend.filter.register('after_render:html', function (str) {
   // 去掉已失效的外部字体样式表（阻塞渲染）
   str = str.replace(/<link[^>]*fonts\.loli\.net[^>]*>\s*/g, '');
 
+  // 不蒜子统计原本同步写在 <head>，会阻塞首屏渲染（实测多 0.6~0.9s）。
+  // 改成：head 里只留预连接，脚本挪到 </body> 前异步加载，阅读数照样能填上。
+  const busuanziTag = /<script src="\/\/busuanzi\.ibruce\.info[^"]*"[^>]*><\/script>\s*/g;
+  const hadBusuanzi = busuanziTag.test(str);
+  if (hadBusuanzi) {
+    str = str.replace(busuanziTag, '<link rel="preconnect" href="https://busuanzi.ibruce.info" crossorigin>\n');
+  }
+  if (hadBusuanzi && str.indexOf('</body>') !== -1) {
+    str = str.replace(
+      '</body>',
+      '<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>\n</body>'
+    );
+  }
+
   // Hexo 输出 <code class="bash">，Argon 的 highlight.js 需要 language-bash
   str = str.replace(/<pre><code class="([\w+#.-]+)">/g, '<pre><code class="language-$1">');
 

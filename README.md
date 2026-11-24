@@ -5,8 +5,14 @@
 
 **线上地址**
 
-- Cloudflare Pages（主站）：<https://songling715.pages.dev>
-- GitHub Pages（镜像）：<https://songling715.github.io>
+- 主站（自定义域名）：<https://songling715.dpdns.org>
+- Cloudflare Pages 原生地址：<https://songling715.pages.dev>（仍可访问，内容相同）
+- GitHub Pages 镜像：<https://songling715.github.io>
+
+域名 `songling715.dpdns.org` 的 DNS 托管在 Cloudflare（另一账号），通过 `CNAME @ → songling715.pages.dev`
+（灰云，未开代理）绑定。这样请求路径和 `pages.dev` 完全一致：解析到同一个边缘 IP，不多一跳，
+实测 TTFB 与 `pages.dev` 在噪声范围内（中位数 0.56s vs 0.48s）。
+**不要把它改成橙云**，橙云会多一次回源请求；要用 zone 级规则的话，正确做法是把 zone 迁到 Pages 所在账号。
 
 ---
 
@@ -94,18 +100,18 @@ GitHub Pages 是备份镜像，Cloudflare 出问题或者被墙时还能访问�
 **Google / 百度 —— 必须你用账号登录提交一次，只需做一次。**
 这两家不开放在线推送接口，只认各自站长平台的验证。
 
-- Google：<https://search.google.com/search-console> → 添加资源 → 选「网址前缀」填 `https://songling715.pages.dev/`
+- Google：<https://search.google.com/search-console> → 添加资源 → 选「网址前缀」填 `https://songling715.dpdns.org/`
   → 验证方式选 **HTML 标记**，把给你的那串 `<meta name="google-site-verification" ...>` 复制到
   `_config.yml` 的 `google_site_verification`（没有就加一行），或直接把验证用的 html 文件放进 `source/`；
   验证通过后左侧「站点地图」提交 `sitemap.xml`。
 - 百度：<https://ziyuan.baidu.com> → 添加站点 → 验证方式选「文件验证」，把 `baidu_verify_xxx.html`
-  放进 `source/`，发布后点验证 → 「普通收录 → sitemap」提交 `https://songling715.pages.dev/sitemap.xml`。
+  放进 `source/`，发布后点验证 → 「普通收录 → sitemap」提交 `https://songling715.dpdns.org/sitemap.xml`。
 
 **关于速度，先有个心理预期：** 新站 Google 通常 3 天到 2 周才开始有收录，百度对 `*.pages.dev`
 这类共享子域名的抓取很保守（可能几周甚至不收录），这是域名权重问题，不是配置问题。想要百度收录稳定，
 只能绑一个自己的域名（见下一节），域名越老、外链越多越快。
 
-自查是否被收录：Google/Bing 里搜 `site:songling715.pages.dev`，有结果就是进了索引。
+自查是否被收录：Google/Bing 里搜 `site:songling715.dpdns.org`，有结果就是进了索引。
 
 ## 目录结构
 

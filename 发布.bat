@@ -24,7 +24,7 @@ if errorlevel 1 echo        (nothing to push, skipped)
 
 echo.
 echo ==============================================
-echo  Done.  https://songling715.pages.dev
+echo  Done.  https://songling715.dpdns.org
 echo ==============================================
 pause
 exit /b 0
