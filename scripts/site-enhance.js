@@ -51,8 +51,16 @@ html.has-banner-var #content:before {
 html.darkmode.has-banner-var #content:before { filter: brightness(.62); }
 #banner, #banner .shape { background: transparent !important; }
 
-/* 横幅：只有首页铺满整个视口，内页保持主题默认高度 */
+/* 横幅：首页铺满整个视口；内页收成一条紧凑的标题带 */
 body.is-home #banner { height: 100vh; height: 100svh; min-height: 560px; }
+body:not(.is-home) #banner { height: 260px; min-height: 260px; }
+body:not(.is-home) .banner-title {
+  font-size: clamp(1.5rem, 2.6vw, 2.3rem) !important;
+  letter-spacing: 1px;
+}
+body:not(.is-home) .banner-subtitle, body:not(.is-home) .banner-subtitle.d-block { display: none !important; }
+/* 内页不再让卡片压到横幅上，避免遮住标题、也避免被固定顶栏切掉 */
+body:not(.is-home) .site-content { margin-top: 0 !important; padding-top: 24px; }
 .banner-title {
   font-family: Georgia, "Times New Roman", "Noto Serif SC",
     "Source Han Serif SC", "Songti SC", STSong, SimSun, serif !important;
@@ -70,7 +78,14 @@ body.is-home #banner { height: 100vh; height: 100svh; min-height: 560px; }
 }
 
 /* ================= 顶栏 ================= */
-#navbar-main { padding-top: 10px; padding-bottom: 10px; }
+#navbar-main { padding-top: 10px; padding-bottom: 10px; transition: background .25s ease, box-shadow .25s ease; }
+/* 滚动后给顶栏一层毛玻璃，不然白字会糊在正文/横幅标题上 */
+body.nav-scrolled #navbar-main {
+  background: rgba(16, 19, 26, .74) !important;
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+}
 #navbar-main .navbar-brand {
   font-weight: 700;
   font-size: 1.3rem;
@@ -321,6 +336,88 @@ html.darkmode #calendar_card .cal-w { color: #7c8698; }
 .bg-ogling { background-color: #95c7e0 !important; }
 .bg-haze { background-color: #9aaec7 !important; }
 
+/* 有信息卡的页面（归档/分类/标签）不再放横幅，信息卡就是页头 */
+body.has-info-card #banner { display: none; }
+
+/* 正文表格在窄屏横向滚动，别挤成竖排 */
+.table-wrap { overflow-x: auto; margin: 16px 0; -webkit-overflow-scrolling: touch; }
+.table-wrap table { margin: 0 !important; min-width: 520px; }
+@media (max-width: 768px) {
+  .table-wrap { border-radius: 8px; }
+}
+/* 评论加载失败的兜底提示 */
+#post_comment .giscus-fallback {
+  padding: 26px 20px;
+  font-size: 13px;
+  color: #8892a6;
+  text-align: center;
+}
+body.has-info-card .site-content { padding-top: 88px !important; }
+
+/* 分类/标签/年份信息卡 */
+.page-information-card {
+  background: linear-gradient(135deg,
+    rgba(var(--themecolor-rgbstr), .92) 0%,
+    rgba(var(--themecolor-rgbstr), .72) 60%,
+    rgba(94, 114, 228, .62) 100%) !important;
+  border-radius: var(--card-radius);
+  color: #fff;
+}
+.page-information-card h1, .page-information-card h2, .page-information-card h3 { color: #fff; }
+
+/* 上一篇 / 下一篇 */
+.post-navigation {
+  display: flex !important;
+  gap: 16px;
+  padding: 16px 20px;
+  font-size: 14px;
+}
+.post-navigation-item { flex: 1 1 0; min-width: 0; width: auto; }
+.page-navigation-extra-text {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 8px;
+  opacity: .7;
+}
+.post-navigation-next .page-navigation-extra-text { justify-content: flex-end; }
+.post-navigation-pre .page-navigation-extra-text i { margin: 0; }
+.post-navigation-next .page-navigation-extra-text i { margin: 0; }
+.post-navigation-item a {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--themecolor);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.post-navigation-item a:hover { text-decoration: underline; }
+html.darkmode .post-navigation-item a { color: #9aa8ff; }
+
+/* 评论区 */
+#post_comment { padding: 0 0 6px; overflow: hidden; }
+.comment-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  background: rgba(var(--themecolor-rgbstr), .07);
+  border-bottom: 1px solid rgba(0,0,0,.05);
+}
+.comment-head i { margin-right: 6px; color: var(--themecolor); }
+.comment-sub { font-size: 12px; font-weight: 400; color: #8892a6; }
+#giscus { padding: 14px 16px 4px; }
+.giscus-loading { padding: 22px 0; text-align: center; font-size: 13px; color: #98a2b3; }
+html.darkmode .comment-head {
+  background: rgba(255,255,255,.04);
+  border-bottom-color: rgba(255,255,255,.07);
+}
+
 /* 文章正文行距与段落间距，长文更好读 */
 .post-content p { line-height: 1.9; }
 
@@ -421,6 +518,14 @@ const SCRIPT = `
 <script no-pjax id="site-scripts">
 (function () {
   var ROOT = ${JSON.stringify((hexo.config.root || '/').replace(/\/+$/, '/'))};
+  var GISCUS_CFG = ${JSON.stringify((function () {
+    var g = (hexo.theme.config && hexo.theme.config.giscus) || {};
+    return {
+      repo: g.repo, repoId: g.repo_id, category: g.category, categoryId: g.category_id,
+      mapping: g.mapping || 'pathname', inputPosition: g.input_position || 'top',
+      lang: g.lang || 'zh-CN'
+    };
+  })())};
 
   /* ---------- 顶部菜单 / 侧栏菜单：emoji 换成 FontAwesome 图标 ---------- */
   var ICONS = { '/': 'fa-home', '/archives/': 'fa-book', '/about/': 'fa-user-o', '/message/': 'fa-comments-o' };
@@ -628,6 +733,84 @@ const SCRIPT = `
     document.getElementById('blog_running_secs').textContent = secs;
   }
 
+  /* ---------- 独立页面的 giscus ---------- */
+  function watchNav() {
+    var on = window.scrollY > 40;
+    document.body.classList.toggle('nav-scrolled', on);
+  }
+  if (!window.__navBound) {
+    window.__navBound = true;
+    window.addEventListener('scroll', watchNav, { passive: true });
+  }
+
+  function initGiscus() {
+    var box = document.getElementById('giscus');
+    if (!box || box.querySelector('iframe') || box.querySelector('script')) return;
+    if (!GISCUS_CFG.repo || !GISCUS_CFG.repoId) return;
+    var sc = document.createElement('script');
+    sc.src = 'https://giscus.app/client.js';
+    sc.setAttribute('data-repo', GISCUS_CFG.repo);
+    sc.setAttribute('data-repo-id', GISCUS_CFG.repoId);
+    sc.setAttribute('data-category', GISCUS_CFG.category);
+    sc.setAttribute('data-category-id', GISCUS_CFG.categoryId);
+    sc.setAttribute('data-mapping', GISCUS_CFG.mapping);
+    sc.setAttribute('data-input-position', GISCUS_CFG.inputPosition);
+    sc.setAttribute('data-lang', GISCUS_CFG.lang);
+    sc.setAttribute('data-theme', document.documentElement.classList.contains('darkmode') ? 'dark_dimmed' : 'light');
+    sc.setAttribute('data-loading', 'lazy');
+    sc.crossOrigin = 'anonymous';
+    sc.async = true;
+    box.appendChild(sc);
+  }
+
+  /* ---------- 正文表格加滚动容器 ---------- */
+  function wrapTables() {
+    var tables = document.querySelectorAll('.post-content table');
+    for (var i = 0; i < tables.length; i++) {
+      var t = tables[i];
+      if (t.parentNode && t.parentNode.classList && t.parentNode.classList.contains('table-wrap')) continue;
+      var w = document.createElement('div');
+      w.className = 'table-wrap';
+      t.parentNode.insertBefore(w, t);
+      w.appendChild(t);
+    }
+  }
+
+  /* ---------- giscus 跟随明暗主题 ---------- */
+  function syncGiscus() {
+    var f = document.querySelector('iframe.giscus-frame');
+    if (!f || !f.contentWindow) return;
+    var dark = document.documentElement.classList.contains('darkmode');
+    try {
+      f.contentWindow.postMessage({ giscus: { setConfig: { theme: dark ? 'dark_dimmed' : 'light' } } }, 'https://giscus.app');
+    } catch (e) {}
+  }
+  function clearGiscusPlaceholder() {
+    var ph = document.querySelector('.giscus-loading');
+    if (ph && ph.parentNode) ph.parentNode.removeChild(ph);
+  }
+  window.addEventListener('message', function (e) {
+    if (e.origin && e.origin.indexOf('giscus.app') !== -1) clearGiscusPlaceholder();
+  });
+
+  function giscusFallback() {
+    setTimeout(function () {
+      var box = document.getElementById('giscus');
+      if (!box || box.querySelector('iframe')) return;
+      clearGiscusPlaceholder();
+      var tip = document.createElement('div');
+      tip.className = 'giscus-fallback';
+      tip.innerHTML = '评论组件加载有点慢，<a href="javascript:location.reload()">点这里刷新</a> 试试（需要能访问 giscus.app）';
+      box.appendChild(tip);
+    }, 6000);
+  }
+  function watchDarkmode() {
+    if (window.__giscusObserver) return;
+    window.__giscusObserver = new MutationObserver(syncGiscus);
+    window.__giscusObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    setInterval(syncGiscus, 1500);
+  }
+
   /* ---------- 访客数搬到徽章里 ---------- */
   function syncUV() {
     var src = document.getElementById('busuanzi_value_site_uv');
@@ -636,12 +819,18 @@ const SCRIPT = `
   }
 
   function boot() {
+    watchNav();
+    initGiscus();
     decorateMenus();
     initSearch();
     tickProgress();
     initCalendar();
+    wrapTables();
     tickRunning();
     syncUV();
+    syncGiscus();
+    watchDarkmode();
+    giscusFallback();
   }
   function bootSoon() { setTimeout(boot, 0); }
 
@@ -652,6 +841,9 @@ const SCRIPT = `
   if (window.jQuery) {
     jQuery(document).on('pjax:complete', function () {
       setTimeout(function () {
+        watchNav();
+        initGiscus();
+        wrapTables();
         decorateMenus();
         initSearch();
         tickProgress();
@@ -786,6 +978,38 @@ hexo.extend.filter.register('after_render:html', function (str) {
         : '<body' + attrs + ' class="is-home">';
     });
   }
+
+  // 归档/分类/标签页：打个标记，用来隐藏横幅
+  let isListPage = str.indexOf('<div class="page-information-card card') !== -1;
+  if (!isListPage) {
+    const um = str.match(/<meta property="og:url" content="([^"]*)"/);
+    if (um) {
+      try {
+        const p2 = new URL(um[1]).pathname;
+        isListPage = /^\/(archives|categories|tags)\//.test(p2) || p2 === '/archives/' || p2 === '/archives';
+      } catch (e) {}
+    }
+  }
+  if (isListPage) {
+    str = str.replace(/<body([^>]*)>/, function (m, attrs) {
+      return /\bclass="/.test(attrs)
+        ? '<body' + attrs.replace('class="', 'class="has-info-card ')
+        : '<body' + attrs + ' class="has-info-card">';
+    });
+  }
+
+  // 独立页面里手写的 <div class="giscus"> 也补成完整评论卡（主题只在文章页加载 giscus）
+  str = str.replace(
+    /<div class="giscus"[^>]*>\s*<\/div>/g,
+    '<div id="post_comment" class="card shadow-sm"><div class="comment-head"><span><i class="fa fa-comments-o"></i>评论</span><span class="comment-sub">登录 GitHub 账号即可发言</span></div><div id="giscus"><div class="giscus-loading">评论加载中…</div></div></div>'
+  );
+
+  // 评论区加一条标题栏
+  str = str.replace('<div id="giscus"></div>', '<div id="giscus"><div class="giscus-loading">评论加载中…</div></div>');
+  str = str.replace(
+    '<div id="post_comment" class="card shadow-sm">',
+    '<div id="post_comment" class="card shadow-sm"><div class="comment-head"><span><i class="fa fa-comments-o"></i>评论</span><span class="comment-sub">登录 GitHub 账号即可发言</span></div>'
+  );
 
   // 顶栏的放大镜图标 → 内联展开式搜索框
   str = str.replace(
