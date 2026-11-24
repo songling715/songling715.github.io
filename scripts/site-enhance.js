@@ -192,6 +192,21 @@ hexo.extend.filter.register('after_render:html', function (str) {
     );
   }
 
+  // 首屏 LCP 是横幅背景图，但它写在 CSS 里，浏览器要等 CSS 解析完才发现。
+  // 提前 preload 并提高优先级，能省 100~300ms。
+  if (str.indexOf('</head>') !== -1 && str.indexOf('/img/cover.jpg') !== -1 &&
+      str.indexOf('rel="preload" as="image"') === -1) {
+    str = str.replace(
+      '</head>',
+      '<link rel="preload" as="image" href="/img/cover.jpg" fetchpriority="high">\n</head>'
+    );
+  }
+
+  // 代码高亮样式只在有代码块的页面才需要，首页/归档页加载纯属浪费
+  if (str.indexOf('<pre') === -1) {
+    str = str.replace(/<link rel="stylesheet" href="[^"]*highlight\/styles\/[^"]*">\s*/g, '');
+  }
+
   // Hexo 输出 <code class="bash">，Argon 的 highlight.js 需要 language-bash
   str = str.replace(/<pre><code class="([\w+#.-]+)">/g, '<pre><code class="language-$1">');
 
