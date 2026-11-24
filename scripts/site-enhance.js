@@ -275,6 +275,13 @@ html.darkmode #calendar_card .cal-w { color: #7c8698; }
   margin-bottom: 25px;
   text-align: center;
 }
+/* 页脚从正文列里提出来，横跨两栏，避免侧栏比正文长时底部空一块 */
+#footer.footer-full {
+  clear: both;
+  float: none;
+  width: auto;
+  margin: 25px 15px 25px;
+}
 #footer a { color: #fff; text-decoration: none; }
 #footer a:hover { text-decoration: underline; }
 #footer > div:not(.github-badge-big) { display: none; }
