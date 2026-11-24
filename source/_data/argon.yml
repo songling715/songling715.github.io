@@ -15,10 +15,10 @@ toolbar_icon: ''
 toolbar_icon_link: ''
 toolbar_title: 'songling715'
 toolbar_menu:
-  首页: /
-  归档: /archives/
-  关于: /about/
-  留言板: /message/
+  🏠 首页: /
+  🗂 归档: /archives/
+  👤 关于: /about/
+  💬 留言板: /message/
 
 # Banner
 banner_title: 'songling715 的博客'
@@ -34,10 +34,10 @@ sidebar_banner_title: '公告栏'
 sidebar_banner_subtitle: '慢慢来，比较快。'
 sidebar_announcement: ''
 leftbar_menu:
-  首页: /
-  归档: /archives/
-  关于: /about/
-  留言板: /message/
+  🏠 首页: /
+  🗂 归档: /archives/
+  👤 关于: /about/
+  💬 留言板: /message/
 sidebar_auther_image: '/img/avatar.svg'
 sidebar_auther_name: 'songling715'
 leftbar_author_links:
@@ -57,9 +57,11 @@ additional_content_after_post: ''
 article_header_style: default
 
 # 背景
-page_background_url: '/img/cover.jpg'
-page_background_dark_url: '/img/cover.jpg'
-page_background_opacity: 0.7
+# 主题会在底层铺一张 fixed 的背景图（z-index:-2），和首页横幅插画风格冲突，
+# 而且多一次图片请求。留空 = 用纯色背景，界面更干净。
+page_background_url: ''
+page_background_dark_url: ''
+page_background_opacity: 1
 transparent_banner: true
 show_toolbar_mask: true
 

@@ -5,22 +5,63 @@
  */
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
+/** 扫描 source/img/banner，作为横幅随机背景图库 */
+function bannerList() {
+  const dir = path.join(hexo.base_dir, 'source', 'img', 'banner');
+  try {
+    return fs
+      .readdirSync(dir)
+      .filter((f) => /\.(jpe?g|png|webp|avif)$/i.test(f))
+      .sort()
+      .map((f) => '/img/banner/' + f);
+  } catch (e) {
+    return [];
+  }
+}
+
 /* ---------- 1. 自定义样式 ---------- */
 const STYLE = `
 <style id="site-custom-style">
 /* 字体：统一使用系统字体栈，避免请求已失效的 Google Fonts 镜像（首屏可省 3s+） */
-body, .banner-title, .banner-subtitle, h1, h2, h3, h4, h5, h6,
+body, .banner-subtitle, h1, h2, h3, h4, h5, h6,
 .post-title, .navbar-brand, .post-content, .leftbar-menu-item a {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei",
     "Source Han Sans SC", "Noto Sans CJK SC", sans-serif !important;
 }
-/* 横幅标题更有存在感 */
-.banner-title { font-size: 2.4em !important; font-weight: 600; letter-spacing: 2px; }
-.banner-subtitle { font-size: 17px !important; letter-spacing: 1px; }
+/* 横幅：只有首页铺满整个视口，内页保持主题默认高度，别让读者每次都先滚一屏。
+   svh 是移动端地址栏收起后的真实高度，避免被裁。 */
+body.is-home #banner { height: 100vh; height: 100svh; min-height: 560px; }
+/* 背景图由 head 里的脚本随机挑一张，叠一层由浅到深的暗角，白字才压得住。
+   主题在 <section> 内部又写了一段 section.banner{background-image:...!important}，
+   同权重且位置更靠后，所以这里必须用 #banner 提权才压得住。 */
+html.has-banner-var #banner {
+  background-image:
+    linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.24) 55%, rgba(0,0,0,.45) 100%),
+    var(--banner-img) !important;
+}
+/* 横幅标题：衬线字 + 大字号，与参考站接近的气质 */
+.banner-title {
+  font-family: Georgia, "Times New Roman", "Noto Serif SC",
+    "Source Han Serif SC", "Songti SC", STSong, SimSun, serif !important;
+  font-size: clamp(2.2rem, 4.6vw, 4.2rem) !important;
+  font-weight: 600;
+  letter-spacing: 3px;
+  line-height: 1.25;
+  text-shadow: 0 4px 30px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.35);
+}
+.banner-subtitle {
+  font-size: clamp(.95rem, 1.4vw, 1.25rem) !important;
+  letter-spacing: 2px;
+  margin-top: 10px;
+  text-shadow: 0 2px 16px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.35);
+}
 @media (max-width: 768px) {
-  .banner-title { font-size: 1.7em !important; }
-  .banner-subtitle { font-size: 14px !important; }
+  .banner { min-height: 480px; }
+  .banner-title { letter-spacing: 1px; }
 }
 /* 年度进度卡片 */
 #year_progress_card { margin-top: 20px; }
@@ -40,7 +81,52 @@ body, .banner-title, .banner-subtitle, h1, h2, h3, h4, h5, h6,
 html.darkmode #year_progress_card .yp-bar { background: rgba(255, 255, 255, .12); }
 /* 文章正文行距与段落间距，长文更好读 */
 .post-content p { line-height: 1.9; }
+/* 主题让内容区上浮 270px 压住横幅底部，这是 Argon 的卡片浮起效果。
+   但首页横幅满屏时会把插画切掉，所以只在首页取消负偏移；内页保留原来的浮起。 */
+/* 首页内容不压住横幅：取消主题的 -270px 上浮，让插画完整露出 */
+body.is-home .site-content { margin-top: 0 !important; }
+/* 看板娘默认 z-index:1，会被卡片盖住 */
+#waifu, #live2d-widget { z-index: 990 !important; }
+@media (max-width: 768px) { #waifu, #live2d-widget { display: none !important; } }
 </style>
+`;
+
+/* ---------- 1.1 横幅随机背景 ---------- */
+function bannerScript(list) {
+  return `<script no-pjax id="banner-random">
+(function(){
+  var L=${JSON.stringify(list)};
+  if(!L.length) return;
+  var u=L[Math.floor(Math.random()*L.length)];
+  var d=document.documentElement;
+  d.style.setProperty('--banner-img','url("'+u+'")');
+  d.classList.add('has-banner-var');
+  var l=document.createElement('link');
+  l.rel='preload'; l.as='image'; l.href=u;
+  if('fetchPriority' in l) l.fetchPriority='high';
+  document.head.appendChild(l);
+})();
+</script>`;
+}
+
+/* ---------- 1.2 Live2D 看板娘（Pio） ---------- */
+const LIVE2D = `
+<script no-pjax id="live2d-loader">
+(function(){
+  // 手机端、弱网直接不加载：模型有好几 MB，不值得为装饰牺牲首屏
+  if (window.innerWidth < 768) return;
+  var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (c && /(^|-)2g$/.test(c.effectiveType || '')) return;
+  function load(){
+    var s = document.createElement('script');
+    s.src = 'https://fastly.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/autoload.js';
+    s.async = true;
+    document.body.appendChild(s);
+  }
+  if (document.readyState === 'complete') load();
+  else window.addEventListener('load', load);
+})();
+</script>
 `;
 
 /* ---------- 2. 侧栏年度进度卡片 ---------- */
@@ -196,10 +282,24 @@ hexo.extend.filter.register('after_render:html', function (str) {
     );
   }
 
-  // 首屏 LCP 是横幅背景图，但它写在 CSS 里，浏览器要等 CSS 解析完才发现。
-  // 提前 preload 并提高优先级，能省 100~300ms。
-  if (str.indexOf('</head>') !== -1 && str.indexOf('/img/cover.jpg') !== -1 &&
+  // 首页加个标记类：横幅满屏、取消卡片上浮，只在首页生效
+  const siteRoot = (hexo.config.url || '').replace(/\/+$/, '');
+  const ogUrlM = str.match(/<meta property="og:url" content="([^"]*)"/);
+  if (ogUrlM && ogUrlM[1].replace(/\/+$/, '') === siteRoot) {
+    str = str.replace(/<body([^>]*)>/, function (m, attrs) {
+      return /\bclass="/.test(attrs)
+        ? '<body' + attrs.replace('class="', 'class="is-home ') + '>'
+        : '<body' + attrs + ' class="is-home">';
+    });
+  }
+
+  // 横幅背景图由 head 里的内联脚本随机挑选，这里把图库注进去，并提前 preload 被选中的那张
+  const banners = bannerList();
+  if (banners.length && str.indexOf('</head>') !== -1) {
+    str = str.replace('</head>', bannerScript(banners) + '\n</head>');
+  } else if (str.indexOf('</head>') !== -1 && str.indexOf('/img/cover.jpg') !== -1 &&
       str.indexOf('rel="preload" as="image"') === -1) {
+    // 没有图库时退回固定图，仍然做 preload
     str = str.replace(
       '</head>',
       '<link rel="preload" as="image" href="/img/cover.jpg" fetchpriority="high">\n</head>'
@@ -222,7 +322,7 @@ hexo.extend.filter.register('after_render:html', function (str) {
     str = str.replace('</aside>', WIDGET + '</aside>');
   }
   if (str.indexOf('</body>') !== -1) {
-    str = str.replace('</body>', SCRIPT + '</body>');
+    str = str.replace('</body>', SCRIPT + LIVE2D + '</body>');
   }
   return str;
 });
