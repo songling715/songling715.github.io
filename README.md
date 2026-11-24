@@ -188,7 +188,16 @@ Bing Webmaster Tools 支持用 Google 账号导入已验证的站点，也能在
 
 **主题色** → `argon.yml` 的 `theme_color`，默认 `#5e72e4`。改一行全站生效。
 
-**横幅和背景图** → 替换 `source/img/cover.jpg`（建议 1920px 宽以内、压缩到 300KB 以下）。
+**横幅和背景图** → 首页横幅是**随机**的，图库在 `source/img/banner/`。
+往里丢任意 `jpg / png / webp` 就行，每次刷新随机挑一张；只有一张就等于固定。
+建议宽度 1600~1920px、压到 200KB 以内（WebP 最省），否则首屏会明显变慢。
+目录为空时回退到 `source/img/cover.jpg`。
+
+推荐压缩命令（装了 ffmpeg 就能用）：
+
+```bash
+ffmpeg -i 原图.png -vf "scale=1600:-2" -c:v libwebp -quality 82 source/img/banner/03.webp
+```
 
 **头像** → 替换 `source/img/avatar.svg`，或改 `argon.yml` 里的 `sidebar_auther_image` 指向任意图片。
 
@@ -197,6 +206,13 @@ Bing Webmaster Tools 支持用 Google 账号导入已验证的站点，也能在
 **关于页 / 留言板** → 直接编辑 `source/about/index.md`、`source/message/index.md`。
 
 **页脚版权信息** → `argon.yml` 的 `footer_html`。
+
+**首页横幅满屏 / 标题字体字号** → 在 `scripts/site-enhance.js` 顶部的 `STYLE` 里：
+`body.is-home #banner` 控制首页满屏（内页保持主题默认高度），`.banner-title` 控制字号和衬线字体。
+
+**看板娘（Live2D）** → 同一个文件里的 `LIVE2D` 常量。不想要就删掉它，
+以及 filter 末尾 `SCRIPT + LIVE2D` 里的 `+ LIVE2D`。默认手机端和 2G 网络不加载，
+点看板娘身上的按钮可以换模型或关掉。
 
 > 注意：所有主题配置都写在 `source/_data/argon.yml` 里，Hexo 会自动覆盖主题默认值。
 > 直接改 `themes/argon/_config.yml` 的话，下次更新主题就丢了。
