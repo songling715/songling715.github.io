@@ -11,7 +11,9 @@
     "deploy": "hexo generate && wrangler pages deploy public --project-name=songling715 --branch=main --commit-dirty=true && node tools/indexnow.js && node tools/baidu-push.js",
     "check": "node tools/visual-check.js",
     "ping": "node tools/indexnow.js",
-    "push:baidu": "node tools/baidu-push.js"
+    "push:baidu": "node tools/baidu-push.js",
+    "sync": "node tools/sync-platforms.js",
+    "pub": "hexo generate && wrangler pages deploy public --project-name=songling715 --branch=main --commit-dirty=true && node tools/indexnow.js && node tools/sync-platforms.js"
   },
   "hexo": {
     "version": "7.3.0"
@@ -31,6 +33,7 @@
     "hexo-server": "^3.0.0"
   },
   "devDependencies": {
+    "@wechatsync/cli": "^1.1.0",
     "puppeteer-core": "^24.0.0",
     "wrangler": "^4.0.0"
   }

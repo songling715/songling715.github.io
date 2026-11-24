@@ -1,0 +1,5 @@
+{
+  "_说明": "平台 id 可选：csdn、cnblogs、juejin、zhihu、oschina、segmentfault、51cto、imooc、weibo、bilibili、yuque、sohu、baijiahao、douban、xueqiu、aliyun、eastmoney、wpshipm。新增平台直接往数组里加。",
+  "platforms": ["csdn", "cnblogs", "juejin"],
+  "defaultCover": ""
+}

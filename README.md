@@ -68,7 +68,8 @@ Argon 主题支持的额外文章参数：
 
 ## 发布
 
-**最简单的方式：双击项目根目录的 `发布.bat`。** 它会自动构建、上传到 Cloudflare、并把源码推到 GitHub。
+**最简单的方式：双击项目根目录的 `发布.bat`。** 它会自动构建、上传到 Cloudflare、推搜索引擎、
+同步到 CSDN / 博客园 / 掘金，最后把源码推到 GitHub。
 
 命令行等价操作：
 
@@ -84,6 +85,52 @@ git push            # 同时更新 GitHub Pages 镜像
 
 **为什么两个平台都要发？** Cloudflare 是主站（国内直连更快，实测首屏 4~5 秒）；
 GitHub Pages 是备份镜像，Cloudflare 出问题或者被墙时还能访问。push 自动更新镜像，不用额外操作。
+
+## 同步到 CSDN / 博客园 / 掘金
+
+一篇文章要发三处时，不用再逐个复制粘贴。项目里接了
+[Wechatsync 文章同步助手](https://github.com/wechatsync/Wechatsync)（开源、6.7k star），
+它能用你浏览器里已有的登录态，把正文直接灌进各平台的草稿箱。
+
+**一次性准备（约 3 分钟）**
+
+1. Chrome / Edge 装扩展：<https://wechatsync.com/#install>
+2. 打开扩展设置，找到「MCP 连接」，开启并复制 Token
+3. 在 Chrome 里把 CSDN、博客园、掘金各登录一次（扩展直接复用它，不会上传密码）
+4. 把 Token 写进环境变量：
+
+```bash
+# PowerShell，临时生效
+$env:WECHATSYNC_TOKEN="你的token"
+
+# 或永久写入用户环境变量
+setx WECHATSYNC_TOKEN "你的token"
+```
+
+**用法**
+
+```bash
+npm run sync                  # 同步最近修改的那篇文章
+npm run sync -- hello-world   # 按文件名
+npm run sync -- 你好           # 按标题关键词
+npm run sync -- --dry-run     # 只预览解析结果，不实际发送
+npm run sync -- --only csdn   # 临时只发一个平台
+```
+
+`发布.bat` 和 `npm run pub` 已经把这一步串进去了：构建 → 部署 Cloudflare → 推搜索引擎 →
+同步到各平台。同步失败不会影响站点发布，只会打一行提示。
+
+**改平台**：编辑 `tools/sync.config.json` 的 `platforms` 数组，可选 id 有
+`csdn`、`cnblogs`、`juejin`、`zhihu`、`oschina`、`segmentfault`、`51cto`、`imooc`、
+`weibo`、`bilibili`、`yuque`、`sohu`、`baijiahao`、`douban`、`xueqiu`、`aliyun`、`eastmoney`。
+想加哪个就加哪个，不用改代码。
+
+脚本会自动做三件平台不认的事：剥掉 Hexo 的 front matter 和 `<!-- more -->`、
+把 `/img/xxx.jpg` 这类站内相对路径换成 `https://songling715.dpdns.org/img/xxx.jpg`
+（否则对方平台抓不到图）、把站内文章链接也换成绝对地址（顺手给自己攒外链）。
+
+**注意**：默认是「存草稿」，不会替你点发布——各平台草稿箱里看一眼再发，
+既避免格式错乱，也避免被判成营销号搬运。
 
 ## 让搜索引擎收录
 
