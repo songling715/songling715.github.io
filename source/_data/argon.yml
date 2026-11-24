@@ -15,10 +15,10 @@ toolbar_icon: ''
 toolbar_icon_link: ''
 toolbar_title: 'songling715'
 toolbar_menu:
-  🏠 首页: /
-  🗂 归档: /archives/
-  👤 关于: /about/
-  💬 留言板: /message/
+  首页: /
+  文章: /archives/
+  关于: /about/
+  留言板: /message/
 
 # Banner
 banner_title: 'songling715 的博客'
@@ -32,12 +32,12 @@ banner_background_color_type: 'shape-primary'
 # 侧栏
 sidebar_banner_title: '公告栏'
 sidebar_banner_subtitle: '慢慢来，比较快。'
-sidebar_announcement: ''
+sidebar_announcement: '记录自己技术增长过程的博客 ~'
 leftbar_menu:
-  🏠 首页: /
-  🗂 归档: /archives/
-  👤 关于: /about/
-  💬 留言板: /message/
+  首页: /
+  文章: /archives/
+  关于: /about/
+  留言板: /message/
 sidebar_auther_image: '/img/avatar.svg'
 sidebar_auther_name: 'songling715'
 leftbar_author_links:
@@ -57,8 +57,7 @@ additional_content_after_post: ''
 article_header_style: default
 
 # 背景
-# 主题会在底层铺一张 fixed 的背景图（z-index:-2），和首页横幅插画风格冲突，
-# 而且多一次图片请求。留空 = 用纯色背景，界面更干净。
+# 固定背景图：滚动时图片留在原地，卡片从上面滑过（和参考站一致）
 page_background_url: ''
 page_background_dark_url: ''
 page_background_opacity: 1
@@ -93,8 +92,12 @@ pjax_disabled: false
 enable_into_article_animation: false
 enable_mobile_scale: false
 
-# 页脚
-footer_html: '<div style="text-align:center">© 2026 songling715 · 由 <a href="https://hexo.io" target="_blank" rel="noopener">Hexo</a> 与 <a href="https://github.com/solstice23/hexo-theme-argon" target="_blank" rel="noopener">Argon</a> 驱动 · 托管于 Cloudflare</div>'
+# 页脚（徽章式，配色参照参考站）
+footer_html: |
+  <div class="github-badge-big"><span class="badge-subject"><i class="fa fa-cloud"></i> CDN</span><span class="badge-value bg-shallots"><a href="https://www.cloudflare.com/" target="_blank" rel="noopener">Cloudflare</a></span><span class="badge-subject"><i class="fa fa-code"></i> Powered</span><span class="badge-value bg-green"><a href="https://hexo.io/" target="_blank" rel="noopener">Hexo</a></span></div>
+  <div class="github-badge-big"><span class="badge-subject">Copyright</span><span class="badge-value bg-red">2026 <i class="fa fa-copyright"></i> songling715</span></div>
+  <div class="github-badge-big"><span class="badge-subject"><i class="fa fa-clock-o"></i> Running Time</span><span class="badge-value bg-apricots"><span id="blog_running_days">0</span> days <span id="blog_running_hours">0</span> H <span id="blog_running_mins">0</span> M <span id="blog_running_secs">0</span> S</span></div>
+  <div class="github-badge-big"><span class="badge-subject"><i class="fa fa-eye"></i> 访客</span><span class="badge-value bg-ogling"><span id="footer_uv">--</span> 人次</span><span class="badge-subject"><i class="fa fa-code-fork"></i> Theme</span><span class="badge-value bg-haze"><a href="https://github.com/solstice23/hexo-theme-argon" target="_blank" rel="noopener">Argon</a></span></div>
 
 # 数学公式（需要时改成 mathjax3 或 katex）
 math_render: ''

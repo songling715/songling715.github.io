@@ -32,18 +32,27 @@ body, .banner-subtitle, h1, h2, h3, h4, h5, h6,
     "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei",
     "Source Han Sans SC", "Noto Sans CJK SC", sans-serif !important;
 }
-/* 横幅：只有首页铺满整个视口，内页保持主题默认高度，别让读者每次都先滚一屏。
-   svh 是移动端地址栏收起后的真实高度，避免被裁。 */
-body.is-home #banner { height: 100vh; height: 100svh; min-height: 560px; }
-/* 背景图由 head 里的脚本随机挑一张，叠一层由浅到深的暗角，白字才压得住。
-   主题在 <section> 内部又写了一段 section.banner{background-image:...!important}，
-   同权重且位置更靠后，所以这里必须用 #banner 提权才压得住。 */
-html.has-banner-var #banner {
+
+/* ================= 固定背景图 =================
+   整站铺一张 fixed 背景，滚动时图片不动、卡片从上面滑过。
+   首页横幅改为透明，于是"满屏插图"和"滚动后还在"是同一张图。 */
+html.has-banner-var #content:before {
+  content: "";
+  position: fixed;
+  left: 0; right: 0; top: 0; bottom: 0;
+  z-index: -2;
   background-image:
-    linear-gradient(180deg, rgba(0,0,0,.10) 0%, rgba(0,0,0,.24) 55%, rgba(0,0,0,.45) 100%),
+    linear-gradient(180deg, rgba(8,12,20,.22) 0%, rgba(8,12,20,.40) 45%, rgba(8,12,20,.58) 100%),
     var(--banner-img) !important;
+  background-position: center !important;
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
 }
-/* 横幅标题：衬线字 + 大字号，与参考站接近的气质 */
+html.darkmode.has-banner-var #content:before { filter: brightness(.62); }
+#banner, #banner .shape { background: transparent !important; }
+
+/* 横幅：只有首页铺满整个视口，内页保持主题默认高度 */
+body.is-home #banner { height: 100vh; height: 100svh; min-height: 560px; }
 .banner-title {
   font-family: Georgia, "Times New Roman", "Noto Serif SC",
     "Source Han Serif SC", "Songti SC", STSong, SimSun, serif !important;
@@ -59,10 +68,158 @@ html.has-banner-var #banner {
   margin-top: 10px;
   text-shadow: 0 2px 16px rgba(0,0,0,.5), 0 1px 2px rgba(0,0,0,.35);
 }
-@media (max-width: 768px) {
-  .banner { min-height: 480px; }
-  .banner-title { letter-spacing: 1px; }
+
+/* ================= 顶栏 ================= */
+#navbar-main { padding-top: 10px; padding-bottom: 10px; }
+#navbar-main .navbar-brand {
+  font-weight: 700;
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  background: linear-gradient(94.75deg, #3cacf7 0%, #8365fd 43.66%, #ff8d70 64.23%, #f7c966 83.76%, #ac8f64 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
+#navbar_global .navbar-nav .nav-link { padding: .55rem 1.25rem; position: relative; }
+#navbar_global .nav-link-inner--text {
+  font-size: 1.02rem;
+  letter-spacing: 1.5px;
+  font-weight: 500;
+}
+#navbar_global .nav-link-inner--text i {
+  margin-right: .5em;
+  font-size: .9em;
+  opacity: .9;
+  transition: transform .25s ease;
+}
+#navbar_global .nav-link:hover .nav-link-inner--text i { transform: translateY(-2px); }
+#navbar_global .navbar-nav-hover .nav-link:after {
+  content: "";
+  position: absolute;
+  left: 1.25rem; right: 1.25rem; bottom: .18rem;
+  height: 2px; border-radius: 2px;
+  background: currentColor;
+  opacity: .5;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+}
+#navbar_global .navbar-nav-hover .nav-link:hover:after { transform: scaleX(1); }
+@media (max-width: 991.98px) {
+  #navbar-main .navbar-brand { margin-right: auto; }
+  #navbar_global .nav-link-inner--text { letter-spacing: .5px; }
+  #navbar_global .navbar-nav-hover .nav-link:after { display: none; }
+}
+
+/* ================= 顶栏内联搜索（点击展开） ================= */
+#navbar_search_container { display: flex; align-items: center; position: relative; }
+#navbar_search_input_container .input-group {
+  width: 46px; height: 44px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.16);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: width .38s cubic-bezier(.4,0,.2,1), background .3s;
+  overflow: hidden;
+  cursor: pointer;
+}
+#navbar_search_container.is-open #navbar_search_input_container .input-group,
+#navbar_search_input_container .input-group:focus-within {
+  width: 252px;
+  background: rgba(255,255,255,.24);
+}
+#navbar_search_input_container .input-group-prepend {
+  position: absolute;
+  left: 0; top: 0;
+  width: 46px; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 2;
+  pointer-events: none;
+}
+#navbar_search_input_container .input-group-text {
+  background: transparent !important;
+  border: 0 !important;
+  color: #fff !important;
+  padding: 0;
+  font-size: 14px;
+}
+#navbar_search_container:not(.is-open) #navbar_search_input { opacity: 0; }
+#navbar_search_input { transition: opacity .18s ease .08s; }
+#navbar_search_input_container .form-control {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #fff !important;
+  height: 44px;
+  padding-left: 46px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+#navbar_search_input_container .form-control::placeholder { color: rgba(255,255,255,.72); }
+#navbar_search_input_container .form-control::-webkit-search-cancel-button { -webkit-appearance: none; }
+#navbar_search_result {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 12px);
+  width: 368px;
+  max-height: 60vh;
+  overflow-y: auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 24px 60px rgba(15,23,42,.28);
+  padding: 8px;
+  display: none;
+  z-index: 1200;
+}
+#navbar_search_container.is-open #navbar_search_result { display: block; }
+.nsr-item { display: block; padding: 9px 12px; border-radius: 9px; color: #2b3445; text-decoration: none; }
+.nsr-item:hover { background: rgba(var(--themecolor-rgbstr), .1); color: var(--themecolor); text-decoration: none; }
+.nsr-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nsr-excerpt { font-size: 12px; line-height: 1.5; color: #8892a6; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.nsr-excerpt em, .nsr-title em { color: var(--themecolor); font-style: normal; font-weight: 600; }
+.nsr-empty { padding: 18px 12px; text-align: center; font-size: 13px; color: #98a2b3; }
+html.darkmode #navbar_search_result { background: #20242b; box-shadow: 0 24px 60px rgba(0,0,0,.55); }
+html.darkmode .nsr-item { color: #dfe4ee; }
+html.darkmode .nsr-item:hover { background: rgba(255,255,255,.07); }
+html.darkmode .nsr-excerpt { color: #8b95a8; }
+
+/* 暗色下卡片做成半透明毛玻璃，背景图能透出来一点，和参考站一个质感 */
+html.darkmode .card, html.darkmode .bg-white {
+  background: rgba(34,37,44,.86) !important;
+  -webkit-backdrop-filter: blur(9px);
+  backdrop-filter: blur(9px);
+}
+html.darkmode #leftbar_part1 .leftbar-banner {
+  background: linear-gradient(150deg, rgba(var(--themecolor-rgbstr),.55) 0%, rgba(var(--themecolor-rgbstr),.30) 55%, rgba(24,27,34,.92) 100%) !important;
+}
+
+/* ================= 侧栏 ================= */
+#leftbar .card { border: 0; border-radius: var(--card-radius); }
+#leftbar_part1 { overflow: hidden; }
+#leftbar_announcement {
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(60,172,247,.22) 0%, rgba(94,114,228,.16) 55%, rgba(131,101,253,.12) 100%) !important;
+}
+html.darkmode #leftbar_announcement {
+  background: linear-gradient(135deg, rgba(60,172,247,.16) 0%, rgba(94,114,228,.12) 60%, rgba(34,37,44,.9) 100%) !important;
+}
+#leftbar .leftbar-announcement-title { font-size: 14px; font-weight: 600; letter-spacing: 1px; }
+#leftbar .leftbar-announcement-content { font-size: 13px; line-height: 1.65; opacity: .92; }
+.leftbar-menu-item a { font-size: 15px; }
+.leftbar-menu-item a i { width: 22px; text-align: center; margin-right: .55em; opacity: .85; }
+#leftbar_overview_author_image { transition: transform .35s ease, filter .35s ease; }
+#leftbar_overview_author_image:hover { transform: scale(1.06); filter: brightness(1.05); }
+.leftbar-search-button .btn {
+  background: rgba(var(--themecolor-rgbstr), .12) !important;
+  color: var(--themecolor) !important;
+  font-size: 14px;
+  border-radius: 10px;
+  padding: .6rem 0;
+  transition: background .25s ease;
+}
+.leftbar-search-button .btn:hover { background: rgba(var(--themecolor-rgbstr), .22) !important; }
+html.darkmode .leftbar-search-button .btn { background: rgba(255,255,255,.08) !important; color: #dfe4ee !important; }
+
 /* 年度进度卡片 */
 #year_progress_card { margin-top: 20px; }
 #year_progress_card .yp-row {
@@ -79,15 +236,97 @@ html.has-banner-var #banner {
   transition: width .6s cubic-bezier(.4, 0, .2, 1);
 }
 html.darkmode #year_progress_card .yp-bar { background: rgba(255, 255, 255, .12); }
+html.darkmode #year_progress_card .yp-row { color: #8b95a8; }
+
+/* 日历卡片 */
+#calendar_card { margin-top: 20px; }
+#calendar_card .cal-head {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 14px; margin-bottom: 10px;
+}
+#calendar_card .cal-title { letter-spacing: .5px; }
+#calendar_card .cal-nav {
+  border: 0; background: transparent; color: var(--themecolor);
+  cursor: pointer; padding: 1px 9px; font-size: 15px; border-radius: 6px;
+  line-height: 1.4;
+}
+#calendar_card .cal-nav:hover { background: rgba(var(--themecolor-rgbstr), .12); }
+#calendar_card .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; text-align: center; }
+#calendar_card .cal-w { font-size: 11px; color: #98a2b3; padding-bottom: 4px; }
+#calendar_card .cal-d { font-size: 12px; line-height: 26px; height: 26px; border-radius: 7px; color: #4a5568; }
+#calendar_card .cal-d.mute { color: #c3cad6; }
+#calendar_card .cal-d.today { background: var(--themecolor); color: #fff; font-weight: 600; }
+html.darkmode #calendar_card .cal-d { color: #cfd6e4; }
+html.darkmode #calendar_card .cal-d.mute { color: #5b6478; }
+html.darkmode #calendar_card .cal-w { color: #7c8698; }
+
+/* ================= 页脚徽章 ================= */
+#footer, html.darkmode #footer, html.amoled-dark #footer {
+  background: linear-gradient(150deg,
+    rgba(var(--themecolor-rgbstr), .26) 0%,
+    rgba(var(--themecolor-rgbstr), .18) 55%,
+    rgba(18, 22, 30, .34) 100%) !important;
+  border: 1px solid rgba(255,255,255,.14);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  color: #fff;
+  padding: 22px 18px 14px;
+  border-radius: var(--card-radius);
+  margin-bottom: 25px;
+  text-align: center;
+}
+#footer a { color: #fff; text-decoration: none; }
+#footer a:hover { text-decoration: underline; }
+#footer > div:not(.github-badge-big) { display: none; }
+#footer > span#busuanzi_container_site_uv { display: none !important; }
+.github-badge-big {
+  display: inline-block;
+  border-radius: 6px;
+  text-shadow: none;
+  font-size: 13px;
+  line-height: 17px;
+  margin: 0 4px 8px;
+  vertical-align: middle;
+  font-family: "Open Sans", -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+.github-badge-big .badge-subject {
+  display: inline-block;
+  background-color: #4d4d4d;
+  padding: 4px 6px 4px 7px;
+  border-top-left-radius: 6px;
+  border-bottom-left-radius: 6px;
+}
+.github-badge-big .badge-subject i { margin-right: 3px; }
+.github-badge-big .badge-value {
+  display: inline-block;
+  padding: 4px 7px;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  margin-right: 6px;
+}
+.github-badge-big .badge-value:last-child { margin-right: 0; }
+.bg-orange { background-color: #ec8a64 !important; }
+.bg-red { background-color: #cb7574 !important; }
+.bg-apricots { background-color: #f7c280 !important; }
+.bg-casein { background-color: #dfe291 !important; }
+.bg-green { background-color: #82c98f !important; }
+.bg-shallots { background-color: #97c3c6 !important; }
+.bg-ogling { background-color: #95c7e0 !important; }
+.bg-haze { background-color: #9aaec7 !important; }
+
 /* 文章正文行距与段落间距，长文更好读 */
 .post-content p { line-height: 1.9; }
-/* 主题让内容区上浮 270px 压住横幅底部，这是 Argon 的卡片浮起效果。
-   但首页横幅满屏时会把插画切掉，所以只在首页取消负偏移；内页保留原来的浮起。 */
+
 /* 首页内容不压住横幅：取消主题的 -270px 上浮，让插画完整露出 */
 body.is-home .site-content { margin-top: 0 !important; }
 /* 看板娘默认 z-index:1，会被卡片盖住 */
 #waifu, #live2d-widget { z-index: 990 !important; }
-@media (max-width: 768px) { #waifu, #live2d-widget { display: none !important; } }
+@media (max-width: 768px) {
+  #waifu, #live2d-widget { display: none !important; }
+  .banner { min-height: 480px; }
+  .banner-title { letter-spacing: 1px; }
+  #navbar_search_container { display: none; }
+}
 </style>
 `;
 
@@ -109,6 +348,21 @@ function bannerScript(list) {
 </script>`;
 }
 
+/* ---------- 1.15 顶栏内联搜索框（替换原来的放大镜图标） ---------- */
+const SEARCH_HTML = `<ul class="navbar-nav align-items-lg-center ml-lg-auto" id="navbar_search_list">
+						<li id="navbar_search_container" class="nav-item">
+							<div id="navbar_search_input_container">
+								<div class="input-group input-group-alternative">
+									<div class="input-group-prepend">
+										<span class="input-group-text"><i class="fa fa-search"></i></span>
+									</div>
+									<input id="navbar_search_input" class="form-control" placeholder="搜索什么..." type="search" autocomplete="off">
+								</div>
+								<div id="navbar_search_result"></div>
+							</div>
+						</li>
+					</ul>`;
+
 /* ---------- 1.2 Live2D 看板娘（Pio） ---------- */
 const LIVE2D = `
 <script no-pjax id="live2d-loader">
@@ -129,7 +383,7 @@ const LIVE2D = `
 </script>
 `;
 
-/* ---------- 2. 侧栏年度进度卡片 ---------- */
+/* ---------- 2. 侧栏年度进度 + 日历 ---------- */
 const WIDGET = `
 <div id="year_progress_card" class="card bg-white shadow-sm border-0">
   <div class="card-body" style="padding: 18px 20px;">
@@ -144,14 +398,157 @@ const WIDGET = `
     </div>
   </div>
 </div>
+<div id="calendar_card" class="card bg-white shadow-sm border-0">
+  <div class="card-body" style="padding: 16px 18px 10px;">
+    <div class="cal-head">
+      <button type="button" class="cal-nav" id="cal_prev" aria-label="上个月">&lsaquo;</button>
+      <span class="cal-title" id="cal_title">--</span>
+      <button type="button" class="cal-nav" id="cal_next" aria-label="下个月">&rsaquo;</button>
+    </div>
+    <div class="cal-grid" id="cal_grid"></div>
+  </div>
+</div>
 `;
 
 const SCRIPT = `
-<script no-pjax id="year-progress-script">
+<script no-pjax id="site-scripts">
 (function () {
-  function tick() {
+  var ROOT = ${JSON.stringify((hexo.config.root || '/').replace(/\/+$/, '/'))};
+
+  /* ---------- 顶部菜单 / 侧栏菜单：emoji 换成 FontAwesome 图标 ---------- */
+  var ICONS = { '/': 'fa-home', '/archives/': 'fa-book', '/about/': 'fa-user-o', '/message/': 'fa-comments-o' };
+  function pathOf(href) {
+    try { return new URL(href, location.origin).pathname.replace(/index\\.html$/, ''); }
+    catch (e) { return href; }
+  }
+  function decorateMenus() {
+    var nodes = document.querySelectorAll('#navbar_global .navbar-nav-hover .nav-link, #leftbar .leftbar-menu-item > a');
+    for (var k = 0; k < nodes.length; k++) {
+      var a = nodes[k];
+      if (a.getAttribute('data-iconized')) continue;
+      a.setAttribute('data-iconized', '1');
+      var target = a.querySelector('.nav-link-inner--text') || a;
+      // 去掉原来的 emoji / 符号前缀（保留中文与英文数字）
+      var text = (target.textContent || '').replace(/^[^\\u4e00-\\u9fa5A-Za-z0-9]+/, '').trim();
+      if (!text) continue;
+      var icon = ICONS[pathOf(a.getAttribute('href') || '')] || 'fa-angle-right';
+      target.innerHTML = '';
+      var i = document.createElement('i');
+      i.className = 'fa ' + icon;
+      target.appendChild(i);
+      target.appendChild(document.createTextNode(text));
+    }
+  }
+
+  /* ---------- 顶栏内联搜索 ---------- */
+  var indexData = null, indexLoading = null;
+  function loadIndex() {
+    if (indexData) return Promise.resolve(indexData);
+    if (indexLoading) return indexLoading;
+    indexLoading = fetch(ROOT + 'search.xml', { credentials: 'same-origin' })
+      .then(function (r) { return r.text(); })
+      .then(function (txt) {
+        var doc = new DOMParser().parseFromString(txt, 'text/xml');
+        var out = [];
+        var entries = doc.getElementsByTagName('entry');
+        for (var i = 0; i < entries.length; i++) {
+          var e = entries[i];
+          var g = function (tag) { var n = e.getElementsByTagName(tag)[0]; return n ? n.textContent : ''; };
+          out.push({
+            t: g('title'),
+            u: g('url'),
+            c: g('content').replace(/<[^>]+>/g, ' ').replace(/\\s+/g, ' ').trim()
+          });
+        }
+        indexData = out;
+        return out;
+      })
+      .catch(function () { indexData = []; return indexData; });
+    return indexLoading;
+  }
+  function esc(s) {
+    return s.replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; });
+  }
+  function mark(text, kw) {
+    var safe = esc(text);
+    if (!kw) return safe;
+    try {
+      var re = new RegExp('(' + kw.replace(/[.*+?^\${}()|[\\]\\\\]/g, '\\\\$&') + ')', 'gi');
+      return safe.replace(re, '<em>$1</em>');
+    } catch (e) { return safe; }
+  }
+  function renderResults(box, list, kw) {
+    if (!kw) { box.innerHTML = '<div class="nsr-empty">输入关键词开始搜索</div>'; return; }
+    if (!list.length) { box.innerHTML = '<div class="nsr-empty">没有找到相关内容</div>'; return; }
+    var html = '';
+    for (var i = 0; i < list.length; i++) {
+      var it = list[i];
+      var pos = it.c.toLowerCase().indexOf(kw.toLowerCase());
+      var start = pos > 26 ? pos - 26 : 0;
+      var snippet = it.c.substring(start, start + 96);
+      html += '<a class="nsr-item" href="' + it.u + '">' +
+        '<div class="nsr-title">' + mark(it.t, kw) + '</div>' +
+        '<div class="nsr-excerpt">' + (start > 0 ? '…' : '') + mark(snippet, kw) + '…</div></a>';
+    }
+    box.innerHTML = html;
+  }
+  function initSearch() {
+    var wrap = document.getElementById('navbar_search_container');
+    var input = document.getElementById('navbar_search_input');
+    var box = document.getElementById('navbar_search_result');
+    if (!wrap || !input || !box || wrap.getAttribute('data-ready')) return;
+    wrap.setAttribute('data-ready', '1');
+
+    function open() {
+      wrap.classList.add('is-open');
+      loadIndex();
+      setTimeout(function () { input.focus(); }, 60);
+    }
+    function close() { wrap.classList.remove('is-open'); input.blur(); }
+    var timer = null;
+
+    wrap.addEventListener('click', function (e) {
+      if (!wrap.classList.contains('is-open')) {
+        e.preventDefault();
+        open();
+      }
+    });
+    input.addEventListener('focus', open);
+    input.addEventListener('input', function () {
+      var kw = input.value.trim();
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        if (!kw) { renderResults(box, [], ''); return; }
+        loadIndex().then(function (list) {
+          var k = kw.toLowerCase();
+          var hit = list.filter(function (it) {
+            return (it.t + ' ' + it.c).toLowerCase().indexOf(k) !== -1;
+          }).slice(0, 8);
+          renderResults(box, hit, kw);
+        });
+      }, 120);
+    });
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') { close(); }
+      if (e.key === 'Enter') {
+        e.stopPropagation();
+        e.preventDefault();
+        var first = box.querySelector('.nsr-item');
+        if (first) { window.location.href = first.getAttribute('href'); }
+      }
+    });
+    document.addEventListener('click', function (e) {
+      if (!wrap.contains(e.target)) close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') close();
+    });
+  }
+
+  /* ---------- 侧栏年度进度 ---------- */
+  function tickProgress() {
     var fill = document.getElementById('yp_fill');
-    if (!fill) return; // 侧栏还没渲染
+    if (!fill) return;
     var now = new Date();
     var y = now.getFullYear();
     var start = new Date(y, 0, 1).getTime();
@@ -163,10 +560,100 @@ const SCRIPT = `
     document.getElementById('yp_left').textContent = left;
     fill.style.width = pct.toFixed(3) + '%';
   }
-  tick();
-  setInterval(tick, 60000);
-  // Pjax 切换页面后补算一次
-  if (window.jQuery) jQuery(document).on('pjax:complete', tick);
+
+  /* ---------- 侧栏日历 ---------- */
+  var calDate = new Date();
+  function renderCalendar() {
+    var title = document.getElementById('cal_title');
+    var grid = document.getElementById('cal_grid');
+    if (!title || !grid) return;
+    var y = calDate.getFullYear(), m = calDate.getMonth();
+    var today = new Date();
+    var first = new Date(y, m, 1);
+    var startPad = (first.getDay() + 6) % 7;      // 周一开头
+    var days = new Date(y, m + 1, 0).getDate();
+    var prevDays = new Date(y, m, 0).getDate();
+    title.textContent = y + ' 年 ' + (m + 1) + ' 月';
+
+    var html = '';
+    var w = ['一', '二', '三', '四', '五', '六', '日'];
+    for (var i = 0; i < 7; i++) html += '<div class="cal-w">' + w[i] + '</div>';
+    for (var p = startPad - 1; p >= 0; p--) html += '<div class="cal-d mute">' + (prevDays - p) + '</div>';
+    for (var d = 1; d <= days; d++) {
+      var cls = 'cal-d';
+      if (d === today.getDate() && m === today.getMonth() && y === today.getFullYear()) cls += ' today';
+      html += '<div class="' + cls + '">' + d + '</div>';
+    }
+    var total = startPad + days;
+    var tail = (7 - (total % 7)) % 7;
+    for (var t = 1; t <= tail; t++) html += '<div class="cal-d mute">' + t + '</div>';
+    grid.innerHTML = html;
+  }
+  function initCalendar() {
+    var prev = document.getElementById('cal_prev');
+    var next = document.getElementById('cal_next');
+    if (!prev || prev.getAttribute('data-ready')) return;
+    prev.setAttribute('data-ready', '1');
+    prev.addEventListener('click', function () {
+      calDate = new Date(calDate.getFullYear(), calDate.getMonth() - 1, 1);
+      renderCalendar();
+    });
+    next.addEventListener('click', function () {
+      calDate = new Date(calDate.getFullYear(), calDate.getMonth() + 1, 1);
+      renderCalendar();
+    });
+    renderCalendar();
+  }
+
+  /* ---------- 页脚运行时间 ---------- */
+  var SITE_START = new Date('2026-11-24T00:00:00+08:00').getTime();
+  function tickRunning() {
+    var d = document.getElementById('blog_running_days');
+    if (!d) return;
+    var diff = Math.max(0, Date.now() - SITE_START) / 1000;
+    var days = Math.floor(diff / 86400);
+    var hours = Math.floor(diff % 86400 / 3600);
+    var mins = Math.floor(diff % 3600 / 60);
+    var secs = Math.floor(diff % 60);
+    d.textContent = days;
+    document.getElementById('blog_running_hours').textContent = hours;
+    document.getElementById('blog_running_mins').textContent = mins;
+    document.getElementById('blog_running_secs').textContent = secs;
+  }
+
+  /* ---------- 访客数搬到徽章里 ---------- */
+  function syncUV() {
+    var src = document.getElementById('busuanzi_value_site_uv');
+    var dst = document.getElementById('footer_uv');
+    if (src && dst && src.textContent.trim()) dst.textContent = src.textContent.trim();
+  }
+
+  function boot() {
+    decorateMenus();
+    initSearch();
+    tickProgress();
+    initCalendar();
+    tickRunning();
+    syncUV();
+  }
+  function bootSoon() { setTimeout(boot, 0); }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootSoon);
+  else bootSoon();
+  setInterval(function () { tickRunning(); syncUV(); }, 1000);
+
+  if (window.jQuery) {
+    jQuery(document).on('pjax:complete', function () {
+      setTimeout(function () {
+        decorateMenus();
+        initSearch();
+        tickProgress();
+        initCalendar();
+        tickRunning();
+      }, 60);
+    });
+  }
+  if (window.jQuery) jQuery(document).on('pjax:complete', tickProgress);
 })();
 </script>
 `;
@@ -293,6 +780,12 @@ hexo.extend.filter.register('after_render:html', function (str) {
     });
   }
 
+  // 顶栏的放大镜图标 → 内联展开式搜索框
+  str = str.replace(
+    /<ul class="navbar-nav align-items-lg-center ml-lg-auto">\s*<li class="nav-item" data-toggle="modal" data-target="#argon_search_modal" id="navbar_search_btn_pc">[\s\S]*?<\/ul>/,
+    SEARCH_HTML
+  );
+
   // 横幅背景图由 head 里的内联脚本随机挑选，这里把图库注进去，并提前 preload 被选中的那张
   const banners = bannerList();
   if (banners.length && str.indexOf('</head>') !== -1) {
@@ -318,6 +811,7 @@ hexo.extend.filter.register('after_render:html', function (str) {
     str = seoEnhance(str);
     str = str.replace('</head>', STYLE + '</head>');
   }
+  // 进度卡与日历放进侧栏内部（#leftbar 是浮动列，放在外面会错位）
   if (str.indexOf('</aside>') !== -1) {
     str = str.replace('</aside>', WIDGET + '</aside>');
   }
