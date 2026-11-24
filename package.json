@@ -8,9 +8,10 @@
     "clean": "hexo clean",
     "server": "hexo server",
     "new": "hexo new",
-    "deploy": "hexo generate && wrangler pages deploy public --project-name=songling715 --branch=main --commit-dirty=true && node tools/indexnow.js",
+    "deploy": "hexo generate && wrangler pages deploy public --project-name=songling715 --branch=main --commit-dirty=true && node tools/indexnow.js && node tools/baidu-push.js",
     "check": "node tools/visual-check.js",
-    "ping": "node tools/indexnow.js"
+    "ping": "node tools/indexnow.js",
+    "push:baidu": "node tools/baidu-push.js"
   },
   "hexo": {
     "version": "7.3.0"

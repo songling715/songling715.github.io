@@ -97,19 +97,21 @@ GitHub Pages 是备份镜像，Cloudflare 出问题或者被墙时还能访问�
 校验文件是 `source/6952987e7d31aa378b204ac27d916dd5.txt`（**别删**，删了推送会 403）。
 想手动重推一次：`npm run ping`。
 
-**Google / 百度 —— 必须你用账号登录提交一次，只需做一次。**
-这两家不开放在线推送接口，只认各自站长平台的验证。
+**Google —— 已验证标签，只差提交 sitemap。**
+实现在 `_config.yml` 的 `google_site_verification`，构建时自动输出到每个页面 head。
+<https://search.google.com/search-console> → 「网址前缀」资源 → 点验证 → 左侧「站点地图」提交 `sitemap.xml`。
 
-- Google：<https://search.google.com/search-console> → 添加资源 → 选「网址前缀」填 `https://songling715.dpdns.org/`
-  → 验证方式选 **HTML 标记**，把给你的那串 `<meta name="google-site-verification" ...>` 复制到
-  `_config.yml` 的 `google_site_verification`（没有就加一行），或直接把验证用的 html 文件放进 `source/`；
-  验证通过后左侧「站点地图」提交 `sitemap.xml`。
-- 百度：<https://ziyuan.baidu.com> → 添加站点 → 验证方式选「文件验证」，把 `baidu_verify_xxx.html`
-  放进 `source/`，发布后点验证 → 「普通收录 → sitemap」提交 `https://songling715.dpdns.org/sitemap.xml`。
+**Bing —— IndexNow 已自动化，但要更快的收录走 Webmaster Tools。**
+Bing Webmaster Tools 支持用 Google 账号导入已验证的站点，也能在「URL 提交」里看抓取状态。
+验证标签是 `msvalidate.01`，填 `_config.yml` 的 `bing_site_verification` 即可。
 
-**关于速度，先有个心理预期：** 新站 Google 通常 3 天到 2 周才开始有收录，百度对 `*.pages.dev`
-这类共享子域名的抓取很保守（可能几周甚至不收录），这是域名权重问题，不是配置问题。想要百度收录稳定，
-只能绑一个自己的域名（见下一节），域名越老、外链越多越快。
+**百度 —— 必须登录验证，且建议顺手开 API 推送。**
+1. <https://ziyuan.baidu.com/site/index> → 「添加网站」，填 `https://songling715.dpdns.org`
+2. 验证方式选「HTML 标签」，把 content 里的值填到 `_config.yml` 的 `baidu_site_verification`，
+   发布后回平台点验证；选「文件验证」则把 `baidu_verify_xxx.html` 放进 `source/` 目录
+3. 验证通过 → 「资源提交 → 普通收录 → sitemap」提交 `https://songling715.dpdns.org/sitemap.xml`
+4. 同一页面的「API提交」里能拿到 token，填 `_config.yml` 的 `baidu_push_token`，
+   之后 `npm run push:baidu`（发布脚本也会自动调用）会把 sitemap 里的地址逐条推过去
 
 自查是否被收录：Google/Bing 里搜 `site:songling715.dpdns.org`，有结果就是进了索引。
 

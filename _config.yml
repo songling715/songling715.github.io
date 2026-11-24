@@ -18,6 +18,10 @@ baidu_site_verification: ''
 # Bing Webmaster Tools 验证（meta name=msvalidate.01 的 content 值）
 bing_site_verification: ''
 
+# 百度普通收录 API 推送 token（验证站点后，在「普通收录 → API提交」里拿）
+# 填了之后 `npm run push:baidu` 或发布脚本会自动把 sitemap 里的地址推给百度
+baidu_push_token: ''
+
 # URL
 # 部署到 Cloudflare Pages 后，把 url 改成你的正式地址
 url: https://songling715.dpdns.org
