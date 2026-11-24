@@ -118,10 +118,10 @@ gitalk:
   clientSecret: ''
 giscus:
   enable: false
-  repo: 'songling715/blog'
-  repo_id: ''
+  repo: 'songling715/songling715.github.io'
+  repo_id: 'R_kgDOV50uFg'
   category: 'Announcements'
-  category_id: ''
+  category_id: 'DIC_kwDOV50uFs4DL2sG'
   mapping: 'pathname'
   input_position: 'top'
   theme: 'light'

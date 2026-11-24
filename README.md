@@ -5,8 +5,8 @@
 
 **线上地址**
 
-- Cloudflare Pages：<https://songling715.pages.dev>
-- GitHub Pages（镜像）：<https://songling715.github.io>
+- GitHub Pages：<https://songling715.github.io> ✅ 已上线
+- Cloudflare Pages：<https://songling715.pages.dev> ⏳ 待完成授权后部署（见文末）
 
 ---
 
@@ -120,11 +120,12 @@ git push
 
 评论用 [Giscus](https://giscus.app/zh-CN)，把评论存到 GitHub Discussions，免费且无需服务器。
 
-1. 在 <https://github.com/songling715/songling715.github.io/settings> 勾选 **Features → Discussions**。
-2. 用 GitHub 账号登录 <https://giscus.app/zh-CN>，安装 giscus App 到该仓库，按页面提示选仓库和分类。
-3. 页面下方会生成一段配置，把 `data-repo-id`、`data-category-id` 两个值填到 `source/_data/argon.yml` 的
-   `giscus.repo_id` 和 `giscus.category_id`，并把 `enable` 改成 `true`。
-4. 留言板页面额外把 `source/message/index.md` 里的 `<div class="giscus">` 补上同样的 script 标签（照抄 giscus 页面给的代码）。
+仓库的 Discussions 已经打开，`repo_id`、`category_id` 也已经填好在 `source/_data/argon.yml` 里，只差两步：
+
+1. 打开 <https://github.com/apps/giscus> → Install → 只勾选 `songling715.github.io` 这个仓库。
+2. 把 `source/_data/argon.yml` 里 `giscus.enable` 改成 `true`，然后 `npm run deploy` 或 push 一次。
+
+这样文章底部和留言板就会有评论区了。
 
 ## 绑定自己的域名（可选，不绑定也能一直免费用）
 
