@@ -124,6 +124,10 @@ function seoEnhance(str) {
   if (cfg.baidu_site_verification) {
     tags.push(`<meta name="baidu-site-verification" content="${cfg.baidu_site_verification}">`);
   }
+  // Bing Webmaster Tools 的验证标签名固定是 msvalidate.01
+  if (cfg.bing_site_verification) {
+    tags.push(`<meta name="msvalidate.01" content="${cfg.bing_site_verification}">`);
+  }
   if (!/property="og:image"/.test(str)) {
     tags.push(`<meta property="og:image" content="${cover}">`);
     tags.push('<meta property="og:image:width" content="1920">');
