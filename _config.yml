@@ -10,6 +10,12 @@ author: songling715
 language: zh-CN
 timezone: Asia/Shanghai
 
+# 站长平台验证码（可选）
+# Google Search Console 选「HTML 标记」验证时，把 content 里的那串字符填到下面（只填值，不带 meta 标签）
+# 百度搜索资源平台选「HTML 标签」验证时同理
+google_site_verification: ''
+baidu_site_verification: ''
+
 # URL
 # 部署到 Cloudflare Pages 后，把 url 改成你的正式地址
 url: https://songling715.pages.dev

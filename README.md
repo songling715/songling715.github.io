@@ -73,11 +73,39 @@ git commit -m "新增文章：xxx"
 git push            # 同时更新 GitHub Pages 镜像
 ```
 
-`npm run deploy` 做两件事：`hexo generate` 生成静态文件 → 把 `public/` 上传到 Cloudflare Pages。
-几十秒后 <https://songling715.pages.dev> 就是最新的。
+`npm run deploy` 做三件事：`hexo generate` 生成静态文件 → 把 `public/` 上传到 Cloudflare Pages →
+把站点地图里的地址推送给搜索引擎（IndexNow，Bing / Yandex / Naver 共用这一个接口）。
 
 **为什么两个平台都要发？** Cloudflare 是主站（国内直连更快，实测首屏 4~5 秒）；
 GitHub Pages 是备份镜像，Cloudflare 出问题或者被墙时还能访问。push 自动更新镜像，不用额外操作。
+
+## 让搜索引擎收录
+
+站点本身已经对爬虫完全开放：`robots.txt` 允许全站抓取并声明了 `sitemap.xml`，
+每个页面都带 `canonical`、`og:image`、中文 `lang` 和 JSON-LD 结构化数据（首页 `WebSite`、文章页 `BlogPosting`）。
+
+剩下的只是「通知搜索引擎来抓」，分两种情况：
+
+**Bing / DuckDuckGo / Yandex —— 已自动化。**
+`npm run deploy` 结尾会调用 IndexNow，把 sitemap 里的所有地址推过去，不需要注册账号。
+校验文件是 `source/6952987e7d31aa378b204ac27d916dd5.txt`（**别删**，删了推送会 403）。
+想手动重推一次：`npm run ping`。
+
+**Google / 百度 —— 必须你用账号登录提交一次，只需做一次。**
+这两家不开放在线推送接口，只认各自站长平台的验证。
+
+- Google：<https://search.google.com/search-console> → 添加资源 → 选「网址前缀」填 `https://songling715.pages.dev/`
+  → 验证方式选 **HTML 标记**，把给你的那串 `<meta name="google-site-verification" ...>` 复制到
+  `_config.yml` 的 `google_site_verification`（没有就加一行），或直接把验证用的 html 文件放进 `source/`；
+  验证通过后左侧「站点地图」提交 `sitemap.xml`。
+- 百度：<https://ziyuan.baidu.com> → 添加站点 → 验证方式选「文件验证」，把 `baidu_verify_xxx.html`
+  放进 `source/`，发布后点验证 → 「普通收录 → sitemap」提交 `https://songling715.pages.dev/sitemap.xml`。
+
+**关于速度，先有个心理预期：** 新站 Google 通常 3 天到 2 周才开始有收录，百度对 `*.pages.dev`
+这类共享子域名的抓取很保守（可能几周甚至不收录），这是域名权重问题，不是配置问题。想要百度收录稳定，
+只能绑一个自己的域名（见下一节），域名越老、外链越多越快。
+
+自查是否被收录：Google/Bing 里搜 `site:songling715.pages.dev`，有结果就是进了索引。
 
 ## 目录结构
 

@@ -2,17 +2,21 @@
 setlocal
 cd /d "%~dp0"
 
-echo [1/3] Building site...
+echo [1/4] Building site...
 call npx hexo generate
 if errorlevel 1 goto fail
 
 echo.
-echo [2/3] Deploying to Cloudflare Pages...
+echo [2/4] Deploying to Cloudflare Pages...
 call npx wrangler pages deploy public --project-name=songling715 --branch=main --commit-dirty=true
 if errorlevel 1 goto fail
 
 echo.
-echo [3/3] Pushing source to GitHub...
+echo [3/4] Pinging search engines (IndexNow)...
+call node tools/indexnow.js
+
+echo.
+echo [4/4] Pushing source to GitHub...
 git add -A
 git commit -m "publish: %date% %time%" >nul 2>&1
 git push

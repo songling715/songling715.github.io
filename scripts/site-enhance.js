@@ -85,6 +85,95 @@ const SCRIPT = `
 </script>
 `;
 
+/* ---------- 2.5 SEO：lang / canonical / 结构化数据 ---------- */
+function seoEnhance(str) {
+  const cfg = hexo.config;
+  const site = (cfg.url || '').replace(/\/+$/, '');
+  const siteName = cfg.title || '';
+
+  // <html> 缺 lang，中文站对搜索引擎和读屏器都不友好
+  str = str.replace(/<html(?![^>]*\blang=)([^>]*)>/, '<html lang="zh-CN"$1>');
+
+  const mUrl = str.match(/<meta property="og:url" content="([^"]*)"/);
+  const pageUrl = mUrl ? mUrl[1] : site + '/';
+  const mTitle = str.match(/<meta property="og:title" content="([^"]*)"/);
+  const pageTitle = mTitle ? mTitle[1] : siteName;
+  const mDesc = str.match(/<meta (?:property="og:description"|name="description") content="([^"]*)"/);
+  const pageDesc = mDesc ? mDesc[1] : (cfg.description || '');
+  const isArticle = /<meta property="og:type" content="article"/.test(str);
+  const cover = site + '/img/cover.jpg';
+
+  const tags = [];
+  if (!/rel="canonical"/.test(str)) {
+    tags.push(`<link rel="canonical" href="${pageUrl}">`);
+  }
+  if (!/name="robots"/.test(str)) {
+    tags.push('<meta name="robots" content="index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1">');
+  }
+  if (cfg.keywords && !/name="keywords"/.test(str)) {
+    const kw = Array.isArray(cfg.keywords) ? cfg.keywords.join(',') : cfg.keywords;
+    tags.push(`<meta name="keywords" content="${kw}">`);
+  }
+  if (cfg.author && !/name="author"/.test(str)) {
+    tags.push(`<meta name="author" content="${cfg.author}">`);
+  }
+  // 站长平台验证（在 _config.yml 里填了才输出）
+  if (cfg.google_site_verification) {
+    tags.push(`<meta name="google-site-verification" content="${cfg.google_site_verification}">`);
+  }
+  if (cfg.baidu_site_verification) {
+    tags.push(`<meta name="baidu-site-verification" content="${cfg.baidu_site_verification}">`);
+  }
+  if (!/property="og:image"/.test(str)) {
+    tags.push(`<meta property="og:image" content="${cover}">`);
+    tags.push('<meta property="og:image:width" content="1920">');
+  }
+  // 主题默认给的是 summary 小图卡片，有大图就升级成 summary_large_image
+  if (/name="twitter:card" content="summary"/.test(str)) {
+    str = str.replace('<meta name="twitter:card" content="summary">', '<meta name="twitter:card" content="summary_large_image">');
+  } else if (!/name="twitter:card"/.test(str)) {
+    tags.push('<meta name="twitter:card" content="summary_large_image">');
+  }
+  if (!/name="twitter:image"/.test(str)) {
+    tags.push(`<meta name="twitter:image" content="${cover}">`);
+  }
+
+  // 结构化数据：让搜索结果能出现站名、作者、发布时间
+  const ld = isArticle
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BlogPosting',
+        headline: pageTitle,
+        description: pageDesc,
+        url: pageUrl,
+        image: [cover],
+        author: { '@type': 'Person', name: cfg.author || siteName },
+        publisher: { '@type': 'Organization', name: siteName },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': pageUrl },
+        inLanguage: 'zh-CN',
+        // 发文日期取自固定链接里的 /YYYY/MM/DD/
+        ...(function () {
+          const d = pageUrl.match(/\/(\d{4})\/(\d{2})\/(\d{2})\//);
+          return d ? { datePublished: `${d[1]}-${d[2]}-${d[3]}T00:00:00+08:00` } : {};
+        })(),
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: siteName,
+        alternateName: cfg.subtitle || '',
+        url: site + '/',
+        description: cfg.description || '',
+        inLanguage: 'zh-CN',
+        author: { '@type': 'Person', name: cfg.author || siteName },
+      };
+  tags.push(
+    `<script type="application/ld+json">${JSON.stringify(ld).replace(/<\//g, '<\\/')}</script>`
+  );
+
+  return str.replace('</head>', tags.join('\n') + '\n</head>');
+}
+
 hexo.extend.filter.register('after_render:html', function (str) {
   // 去掉已失效的外部字体样式表（阻塞渲染）
   str = str.replace(/<link[^>]*fonts\.loli\.net[^>]*>\s*/g, '');
@@ -93,6 +182,7 @@ hexo.extend.filter.register('after_render:html', function (str) {
   str = str.replace(/<pre><code class="([\w+#.-]+)">/g, '<pre><code class="language-$1">');
 
   if (str.indexOf('</head>') !== -1) {
+    str = seoEnhance(str);
     str = str.replace('</head>', STYLE + '</head>');
   }
   if (str.indexOf('</aside>') !== -1) {
