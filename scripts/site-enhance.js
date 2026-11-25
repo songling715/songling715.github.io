@@ -346,7 +346,7 @@ body.has-info-card #banner { display: none; }
   .table-wrap { border-radius: 8px; }
 }
 /* 评论加载失败的兜底提示 */
-#post_comment .giscus-fallback {
+#post_comment .comment-fallback {
   padding: 26px 20px;
   font-size: 13px;
   color: #8892a6;
@@ -411,8 +411,67 @@ html.darkmode .post-navigation-item a { color: #9aa8ff; }
 }
 .comment-head i { margin-right: 6px; color: var(--themecolor); }
 .comment-sub { font-size: 12px; font-weight: 400; color: #8892a6; }
-#giscus { padding: 14px 16px 4px; }
-.giscus-loading { padding: 22px 0; text-align: center; font-size: 13px; color: #98a2b3; }
+/* twikoo 初始化后会再生成一层 #twikoo.twikoo，只给最外层留内边距 */
+.comment-body > #twikoo { padding: 14px 18px 8px; }
+#twikoo.twikoo, #twikoo #twikoo { padding: 0; }
+.comment-fallback { padding: 22px 0; text-align: center; font-size: 13px; color: #98a2b3; }
+/* ============ 评论区细节 ============ */
+#twikoo .tk-input__inner, #twikoo .tk-textarea__inner {
+  border: 1px solid rgba(0,0,0,.12) !important;
+  background: rgba(0,0,0,.015) !important;
+  border-radius: 9px !important;
+  transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
+}
+#twikoo .tk-input__inner:hover, #twikoo .tk-textarea__inner:hover {
+  border-color: rgba(var(--themecolor-rgbstr), .55) !important;
+}
+#twikoo .tk-input__inner:focus, #twikoo .tk-textarea__inner:focus {
+  border-color: var(--themecolor) !important;
+  background: #fff !important;
+  box-shadow: 0 0 0 3px rgba(var(--themecolor-rgbstr), .12) !important;
+  outline: none;
+}
+/* 输入框左右的分组标签（昵称/邮箱/网址） */
+#twikoo .tk-input-group__prepend {
+  background: rgba(var(--themecolor-rgbstr), .07) !important;
+  border-radius: 9px 0 0 9px !important;
+  color: #6b7688;
+}
+#twikoo .tk-submit .tk-row { gap: 8px; }
+#twikoo .tk-nick { font-weight: 600; color: var(--themecolor); }
+#twikoo .tk-comments-title, #twikoo .tk-comments-count { font-weight: 600; }
+#twikoo .tk-submit-action-icon { opacity: .6; transition: opacity .2s; }
+#twikoo .tk-submit-action-icon:hover { opacity: 1; }
+#twikoo .tk-send, #twikoo button.tk-send {
+  border-radius: 8px !important;
+  background: var(--themecolor) !important;
+  border-color: var(--themecolor) !important;
+  font-weight: 500;
+  padding: .38rem 1.1rem !important;
+}
+#twikoo .tk-send:hover, #twikoo button.tk-send:hover { filter: brightness(1.08); }
+#twikoo .tk-preview, #twikoo button.tk-preview { border-radius: 8px !important; }
+html.darkmode #twikoo .tk-input__inner, html.darkmode #twikoo .tk-textarea__inner {
+  background: rgba(255,255,255,.05) !important;
+  border-color: rgba(255,255,255,.13) !important;
+  color: #dfe4ee !important;
+}
+html.darkmode #twikoo .tk-input__inner:focus, html.darkmode #twikoo .tk-textarea__inner:focus {
+  background: rgba(255,255,255,.08) !important;
+  border-color: var(--themecolor) !important;
+  box-shadow: 0 0 0 3px rgba(var(--themecolor-rgbstr), .2) !important;
+}
+html.darkmode #twikoo .tk-input-group__prepend {
+  background: rgba(255,255,255,.06) !important;
+  color: #a8b2c4;
+}
+/* 发送按钮禁用态也保留一点存在感，别灰成一团 */
+#twikoo .tk-send.is-disabled, #twikoo .tk-send:disabled {
+  background: rgba(var(--themecolor-rgbstr), .45) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+}
+html.darkmode #twikoo .tk-comment, html.darkmode #twikoo .tk-content { color: #dfe4ee; }
 html.darkmode .comment-head {
   background: rgba(255,255,255,.04);
   border-bottom-color: rgba(255,255,255,.07);
@@ -518,14 +577,7 @@ const SCRIPT = `
 <script no-pjax id="site-scripts">
 (function () {
   var ROOT = ${JSON.stringify((hexo.config.root || '/').replace(/\/+$/, '/'))};
-  var GISCUS_CFG = ${JSON.stringify((function () {
-    var g = (hexo.theme.config && hexo.theme.config.giscus) || {};
-    return {
-      repo: g.repo, repoId: g.repo_id, category: g.category, categoryId: g.category_id,
-      mapping: g.mapping || 'pathname', inputPosition: g.input_position || 'top',
-      lang: g.lang || 'zh-CN'
-    };
-  })())};
+  var TWIKOO_ENV = '__TWIKOO_ENV__';
 
   /* ---------- 顶部菜单 / 侧栏菜单：emoji 换成 FontAwesome 图标 ---------- */
   var ICONS = { '/': 'fa-home', '/archives/': 'fa-book', '/about/': 'fa-user-o', '/message/': 'fa-comments-o' };
@@ -733,34 +785,59 @@ const SCRIPT = `
     document.getElementById('blog_running_secs').textContent = secs;
   }
 
-  /* ---------- 独立页面的 giscus ---------- */
+  /* ---------- 评论区（Twikoo） ---------- */
+  // twikoo.min.js 是 UMD 包，用 script 标签引入后挂到 window.twikoo
+  var twikooLoading = null;
+  function loadTwikoo() {
+    if (window.twikoo && typeof window.twikoo.init === 'function') return Promise.resolve(window.twikoo);
+    if (twikooLoading) return twikooLoading;
+    twikooLoading = new Promise(function (resolve, reject) {
+      var sc = document.createElement('script');
+      sc.src = ROOT + 'vendor/twikoo/twikoo.min.js';
+      sc.async = true;
+      sc.onload = function () {
+        // UMD 尾部才挂 init，等一拍
+        var tries = 0;
+        (function wait() {
+          if (window.twikoo && typeof window.twikoo.init === 'function') return resolve(window.twikoo);
+          if (++tries > 50) return reject(new Error('Twikoo 初始化超时'));
+          setTimeout(wait, 100);
+        })();
+      };
+      sc.onerror = function () { reject(new Error('Twikoo 脚本加载失败')); };
+      document.body.appendChild(sc);
+    });
+    return twikooLoading;
+  }
+
+  function initTwikoo() {
+    if (!TWIKOO_ENV) return;
+    var el = document.getElementById('twikoo');
+    if (!el || el.getAttribute('data-busy')) return;
+    el.setAttribute('data-busy', '1');
+
+    loadTwikoo().then(function (tk) {
+      var opts = { el: '#twikoo', envId: TWIKOO_ENV, lang: 'zh-CN' };
+      // 用路径区分每篇文章，和主题的固定链接保持一致
+      opts.path = decodeURI(location.pathname);
+      return tk.init(opts);
+    }).then(function () {
+      el.removeAttribute('data-busy');
+    }).catch(function (err) {
+      el.removeAttribute('data-busy');
+      var msg = (err && err.message) || String(err);
+      console.error('[twikoo]', err);
+      el.innerHTML = '<div class="comment-fallback">评论加载失败：' + msg + '</div>';
+    });
+  }
+
+  /* ---------- 滚动时顶栏加毛玻璃 ---------- */
   function watchNav() {
-    var on = window.scrollY > 40;
-    document.body.classList.toggle('nav-scrolled', on);
+    document.body.classList.toggle('nav-scrolled', window.scrollY > 40);
   }
   if (!window.__navBound) {
     window.__navBound = true;
     window.addEventListener('scroll', watchNav, { passive: true });
-  }
-
-  function initGiscus() {
-    var box = document.getElementById('giscus');
-    if (!box || box.querySelector('iframe') || box.querySelector('script')) return;
-    if (!GISCUS_CFG.repo || !GISCUS_CFG.repoId) return;
-    var sc = document.createElement('script');
-    sc.src = 'https://giscus.app/client.js';
-    sc.setAttribute('data-repo', GISCUS_CFG.repo);
-    sc.setAttribute('data-repo-id', GISCUS_CFG.repoId);
-    sc.setAttribute('data-category', GISCUS_CFG.category);
-    sc.setAttribute('data-category-id', GISCUS_CFG.categoryId);
-    sc.setAttribute('data-mapping', GISCUS_CFG.mapping);
-    sc.setAttribute('data-input-position', GISCUS_CFG.inputPosition);
-    sc.setAttribute('data-lang', GISCUS_CFG.lang);
-    sc.setAttribute('data-theme', document.documentElement.classList.contains('darkmode') ? 'dark_dimmed' : 'light');
-    sc.setAttribute('data-loading', 'lazy');
-    sc.crossOrigin = 'anonymous';
-    sc.async = true;
-    box.appendChild(sc);
   }
 
   /* ---------- 正文表格加滚动容器 ---------- */
@@ -776,41 +853,6 @@ const SCRIPT = `
     }
   }
 
-  /* ---------- giscus 跟随明暗主题 ---------- */
-  function syncGiscus() {
-    var f = document.querySelector('iframe.giscus-frame');
-    if (!f || !f.contentWindow) return;
-    var dark = document.documentElement.classList.contains('darkmode');
-    try {
-      f.contentWindow.postMessage({ giscus: { setConfig: { theme: dark ? 'dark_dimmed' : 'light' } } }, 'https://giscus.app');
-    } catch (e) {}
-  }
-  function clearGiscusPlaceholder() {
-    var ph = document.querySelector('.giscus-loading');
-    if (ph && ph.parentNode) ph.parentNode.removeChild(ph);
-  }
-  window.addEventListener('message', function (e) {
-    if (e.origin && e.origin.indexOf('giscus.app') !== -1) clearGiscusPlaceholder();
-  });
-
-  function giscusFallback() {
-    setTimeout(function () {
-      var box = document.getElementById('giscus');
-      if (!box || box.querySelector('iframe')) return;
-      clearGiscusPlaceholder();
-      var tip = document.createElement('div');
-      tip.className = 'giscus-fallback';
-      tip.innerHTML = '评论组件加载有点慢，<a href="javascript:location.reload()">点这里刷新</a> 试试（需要能访问 giscus.app）';
-      box.appendChild(tip);
-    }, 6000);
-  }
-  function watchDarkmode() {
-    if (window.__giscusObserver) return;
-    window.__giscusObserver = new MutationObserver(syncGiscus);
-    window.__giscusObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    setInterval(syncGiscus, 1500);
-  }
-
   /* ---------- 访客数搬到徽章里 ---------- */
   function syncUV() {
     var src = document.getElementById('busuanzi_value_site_uv');
@@ -820,7 +862,7 @@ const SCRIPT = `
 
   function boot() {
     watchNav();
-    initGiscus();
+    initTwikoo();
     decorateMenus();
     initSearch();
     tickProgress();
@@ -828,9 +870,7 @@ const SCRIPT = `
     wrapTables();
     tickRunning();
     syncUV();
-    syncGiscus();
-    watchDarkmode();
-    giscusFallback();
+    initTwikoo();
   }
   function bootSoon() { setTimeout(boot, 0); }
 
@@ -842,7 +882,7 @@ const SCRIPT = `
     jQuery(document).on('pjax:complete', function () {
       setTimeout(function () {
         watchNav();
-        initGiscus();
+        initTwikoo();
         wrapTables();
         decorateMenus();
         initSearch();
@@ -998,18 +1038,31 @@ hexo.extend.filter.register('after_render:html', function (str) {
     });
   }
 
-  // 独立页面里手写的 <div class="giscus"> 也补成完整评论卡（主题只在文章页加载 giscus）
-  str = str.replace(
-    /<div class="giscus"[^>]*>\s*<\/div>/g,
-    '<div id="post_comment" class="card shadow-sm"><div class="comment-head"><span><i class="fa fa-comments-o"></i>评论</span><span class="comment-sub">登录 GitHub 账号即可发言</span></div><div id="giscus"><div class="giscus-loading">评论加载中…</div></div></div>'
-  );
+  // 主题的 article-bottom.ejs 只认 gitalk / giscus / waline，没有 twikoo 分支，
+  // 所以这里是整块拼出来的：手写的 .giscus 空壳、以及文章页的上下篇之前。
+  const COMMENT_CARD =
+    '<div id="post_comment" class="card shadow-sm">' +
+    '<div class="comment-head"><span><i class="fa fa-comments-o"></i>评论</span>' +
+    '<span class="comment-sub">昵称 + 邮箱即可发言，无需登录</span></div>' +
+    '<div class="comment-body"><div id="twikoo"></div></div></div>';
+  const twikooOn = String(hexo.theme.config.twikoo && hexo.theme.config.twikoo.enable) === 'true';
 
-  // 评论区加一条标题栏
-  str = str.replace('<div id="giscus"></div>', '<div id="giscus"><div class="giscus-loading">评论加载中…</div></div>');
-  str = str.replace(
-    '<div id="post_comment" class="card shadow-sm">',
-    '<div id="post_comment" class="card shadow-sm"><div class="comment-head"><span><i class="fa fa-comments-o"></i>评论</span><span class="comment-sub">登录 GitHub 账号即可发言</span></div>'
-  );
+  // 独立页面里手写的评论占位：<!-- twikoo:comment --> 或旧的 <div class="giscus"></div>
+  str = str.replace(/<!--\s*twikoo:comment\s*-->/g, twikooOn ? COMMENT_CARD : '');
+  str = str.replace(/<div class="giscus"[^>]*>\s*<\/div>/g, twikooOn ? COMMENT_CARD : '');
+
+  // 文章页：插在上下篇导航前（没有上下篇就插在页脚前）
+  if (twikooOn && str.indexOf('id="post_comment"') === -1) {
+    if (/<div class="post-navigation card/.test(str)) {
+      str = str.replace(/(<div class="post-navigation card)/, COMMENT_CARD + '$1');
+    } else if (str.indexOf('<footer id="footer"') !== -1) {
+      str = str.replace('<footer id="footer"', COMMENT_CARD + '<footer id="footer"');
+    }
+  }
+
+  // 主题自带的 twikoo.ejs 指向 #tcomment（页面上没这个元素）且锁死旧版 CDN，删掉改由站点脚本初始化
+  str = str.replace(/<script[^>]*src="[^"]*twikoo[^"]*"[^>]*><\/script>\s*/gi, '');
+  str = str.replace(/<script>\s*twikoo\.init\([\s\S]*?<\/script>\s*/gi, '');
 
   // 顶栏的放大镜图标 → 内联展开式搜索框
   str = str.replace(
@@ -1047,7 +1100,10 @@ hexo.extend.filter.register('after_render:html', function (str) {
     str = str.replace('</aside>', WIDGET + '</aside>');
   }
   if (str.indexOf('</body>') !== -1) {
-    str = str.replace('</body>', SCRIPT + LIVE2D + '</body>');
+    const tk = (hexo.theme.config && hexo.theme.config.twikoo) || {};
+    const envId = tk.envID && tk.envID.trim() ? tk.envID.trim() : '';
+    const script = SCRIPT.replace('__TWIKOO_ENV__', envId);
+    str = str.replace('</body>', script + LIVE2D + '</body>');
   }
   return str;
 });

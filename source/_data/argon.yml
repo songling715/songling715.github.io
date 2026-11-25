@@ -122,7 +122,7 @@ gitalk:
   clientID: ''
   clientSecret: ''
 giscus:
-  enable: true
+  enable: false
   repo: 'songling715/songling715.github.io'
   repo_id: 'R_kgDOV50uFg'
   category: 'Announcements'
@@ -135,8 +135,8 @@ waline:
   enable: false
   server_url: ''
 twikoo:
-  enable: false
-  envID: ' '
+  enable: true
+  envID: 'https://twikoo-vercel-min-one.vercel.app'
   lang: 'zh-CN'
 
 # 分析
