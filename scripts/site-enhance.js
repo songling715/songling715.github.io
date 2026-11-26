@@ -186,7 +186,9 @@ body.nav-scrolled #navbar-main {
   display: none;
   z-index: 1200;
 }
-#navbar_search_container.is-open #navbar_search_result { display: block; }
+/* 只有真的塞了内容才出现，否则展开时下面会留一条空白条 */
+#navbar_search_container.is-open #navbar_search_result:not(:empty) { display: block; }
+#navbar_search_result:empty { display: none !important; }
 .nsr-item { display: block; padding: 9px 12px; border-radius: 9px; color: #2b3445; text-decoration: none; }
 .nsr-item:hover { background: rgba(var(--themecolor-rgbstr), .1); color: var(--themecolor); text-decoration: none; }
 .nsr-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -482,6 +484,32 @@ html.darkmode .comment-head {
 
 /* 首页内容不压住横幅：取消主题的 -270px 上浮，让插画完整露出 */
 body.is-home .site-content { margin-top: 0 !important; }
+/* ===== 首页底部下箭头（滚动提示） ===== */
+#banner_scroll_down {
+  position: absolute;
+  left: 50%;
+  bottom: 26px;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: .85;
+  z-index: 5;
+  animation: sdFloat 2.2s ease-in-out infinite;
+  filter: drop-shadow(0 2px 8px rgba(0,0,0,.4));
+}
+#banner_scroll_down:hover { opacity: 1; }
+@keyframes sdFloat {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, 8px); }
+}
+body:not(.is-home) #banner_scroll_down { display: none; }
+
 /* 看板娘默认 z-index:1，会被卡片盖住 */
 #waifu, #live2d-widget { z-index: 990 !important; }
 @media (max-width: 768px) {
@@ -579,6 +607,32 @@ const SCRIPT = `
   var ROOT = ${JSON.stringify((hexo.config.root || '/').replace(/\/+$/, '/'))};
   var TWIKOO_ENV = '__TWIKOO_ENV__';
 
+  /* ---------- 横幅打字效果（主题模板漏了 data-interval 的值，会瞬间输出） ---------- */
+  // data-interval 已在构建时补好，主题自带的打字机会正常逐字输出。
+  // 这里只做兜底：万一主题没跑（pjax 切回首页），补一次。
+  function fixTyping() {
+    var t = document.querySelector('.banner-title[data-text]');
+    if (!t) return;
+    var inner = t.querySelector('.banner-title-inner');
+    if (!inner) return;
+    if (inner.textContent && inner.textContent.trim()) return;
+    if (t.getAttribute('data-typing-run') === '1') return;
+    t.setAttribute('data-typing-run', '1');
+    var iv = parseInt(t.getAttribute('data-interval'), 10) || 120;
+    var text = t.getAttribute('data-text') || '';
+    var i = 0;
+    t.classList.add('typing-effect');
+    (function step() {
+      inner.textContent = text.substring(0, i);
+      if (i >= text.length) {
+        setTimeout(function () { t.classList.remove('typing-effect'); }, 900);
+        return;
+      }
+      i++;
+      setTimeout(step, iv);
+    })();
+  }
+
   /* ---------- 顶部菜单 / 侧栏菜单：emoji 换成 FontAwesome 图标 ---------- */
   var ICONS = { '/': 'fa-home', '/archives/': 'fa-book', '/about/': 'fa-user-o', '/message/': 'fa-comments-o' };
   function pathOf(href) {
@@ -637,7 +691,10 @@ const SCRIPT = `
     var safe = esc(text);
     if (!kw) return safe;
     try {
-      var re = new RegExp('(' + kw.replace(/[.*+?^\${}()|[\\]\\\\]/g, '\\\\$&') + ')', 'gi');
+      var specials = /[.*+?^$()|[\]\\]/g;
+      var dollar = String.fromCharCode(36);
+      var slash = String.fromCharCode(92);
+      var re = new RegExp('(' + kw.replace(specials, slash + dollar + '&') + ')', 'gi');
       return safe.replace(re, '<em>$1</em>');
     } catch (e) { return safe; }
   }
@@ -831,9 +888,36 @@ const SCRIPT = `
     });
   }
 
+  /* ---------- 首页下箭头 ---------- */
+  function initScrollDown() {
+    var btn = document.getElementById('banner_scroll_down');
+    if (!btn || btn.getAttribute('data-ready')) return;
+    btn.setAttribute('data-ready', '1');
+    btn.addEventListener('click', function () {
+      var target = document.getElementById('content');
+      var y = target ? target.getBoundingClientRect().top + window.scrollY - 70 : window.innerHeight;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    });
+  }
+
   /* ---------- 滚动时顶栏加毛玻璃 ---------- */
   function watchNav() {
     document.body.classList.toggle('nav-scrolled', window.scrollY > 40);
+  }
+
+  /* is-home 是构建时写进 HTML 的，pjax 切页不会更新，必须按当前路径重算 */
+  function syncHomeFlag() {
+    // ROOT 是 '/'，首页路径可能是 '/' 或 '/index.html'
+    var p = location.pathname.replace(/index\.html$/, '');
+    var rootBase = ROOT.charAt(ROOT.length - 1) === String.fromCharCode(47) ? ROOT.slice(0, -1) : ROOT;
+    var isHome = p === '/' || p === '' || p === ROOT || p === rootBase;
+    document.body.classList.toggle('is-home', isHome);
+    if (isHome) {
+      // 回首页时把横幅打字重跑一遍
+      var t = document.querySelector('.banner-title[data-text]');
+      if (t) { t.removeAttribute('data-typing-run'); t.querySelector('.banner-title-inner').textContent = ''; }
+      fixTyping();
+    }
   }
   if (!window.__navBound) {
     window.__navBound = true;
@@ -860,9 +944,26 @@ const SCRIPT = `
     if (src && dst && src.textContent.trim()) dst.textContent = src.textContent.trim();
   }
 
-  function boot() {
+  // 暴露给外部（pjax 兜底、调试）
+  window.__siteBoot = function () {
+    syncHomeFlag();
     watchNav();
+    fixTyping();
+    initScrollDown();
     initTwikoo();
+    wrapTables();
+    decorateMenus();
+    initSearch();
+    tickProgress();
+    initCalendar();
+    tickRunning();
+  };
+
+  function boot() {
+    syncHomeFlag();
+    watchNav();
+    fixTyping();
+    initScrollDown();
     decorateMenus();
     initSearch();
     tickProgress();
@@ -876,20 +977,12 @@ const SCRIPT = `
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bootSoon);
   else bootSoon();
+
   setInterval(function () { tickRunning(); syncUV(); }, 1000);
 
   if (window.jQuery) {
     jQuery(document).on('pjax:complete', function () {
-      setTimeout(function () {
-        watchNav();
-        initTwikoo();
-        wrapTables();
-        decorateMenus();
-        initSearch();
-        tickProgress();
-        initCalendar();
-        tickRunning();
-      }, 60);
+      setTimeout(function () { window.__siteBoot && window.__siteBoot(); }, 60);
     });
   }
   if (window.jQuery) jQuery(document).on('pjax:complete', tickProgress);
@@ -1036,6 +1129,24 @@ hexo.extend.filter.register('after_render:html', function (str) {
         ? '<body' + attrs.replace('class="', 'class="has-info-card ')
         : '<body' + attrs + ' class="has-info-card">';
     });
+  }
+
+  // 主题模板里 data-interval 用的是 <% %> 少了个等号，构建出来是空字符串，
+  // 导致主题的打字机以 NaN 间隔瞬间打完。这里在 HTML 层面补值。
+  const typeIv = (hexo.theme.config && hexo.theme.config.banner_typing_effect_interval) || 120;
+  str = str.replace(/data-interval=""/g, 'data-interval="' + typeIv + '"');
+
+  // 首页横幅底部下箭头
+  if (str.indexOf('id="banner"') !== -1 && str.indexOf('id="banner_scroll_down"') === -1) {
+    const bStart = str.indexOf('<section id="banner"');
+    if (bStart !== -1) {
+      const bEnd = str.indexOf('</section>', bStart);
+      if (bEnd !== -1) {
+        str = str.slice(0, bEnd) +
+          '<button id="banner_scroll_down" type="button" aria-label="向下滚动"><i class="fa fa-angle-down"></i></button>' +
+          str.slice(bEnd);
+      }
+    }
   }
 
   // 主题的 article-bottom.ejs 只认 gitalk / giscus / waline，没有 twikoo 分支，
