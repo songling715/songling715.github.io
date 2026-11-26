@@ -136,7 +136,7 @@ waline:
   server_url: ''
 twikoo:
   enable: true
-  envID: 'https://twikoo-vercel-min-one.vercel.app'
+  envID: 'https://twikoo.songling715.dpdns.org'
   lang: 'zh-CN'
 
 # 分析
