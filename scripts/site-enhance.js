@@ -512,6 +512,49 @@ body:not(.is-home) #banner_scroll_down { display: none; }
 
 /* 看板娘默认 z-index:1，会被卡片盖住 */
 #waifu, #live2d-widget { z-index: 990 !important; }
+
+/* ===== 看板娘工具列：换成参考站那种彩色 SVG 图标 + 悬停淡入 ===== */
+#waifu #waifu-tool {
+  opacity: 0;
+  right: 0;
+  top: 3em;
+  line-height: 1;
+  font-size: 16px;
+  transition: opacity .3s ease;
+}
+#waifu:hover #waifu-tool, #waifu:focus-within #waifu-tool { opacity: 1; }
+#waifu #waifu-tool > span, #waifu #waifu-tool > button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.8em;
+  height: 1.8em;
+  margin: 0 0 .5em;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  font-size: inherit;
+  transition: transform .18s ease;
+}
+#waifu-tool > span:hover, #waifu-tool > button:hover { transform: scale(1.12); }
+#waifu-tool > :focus-visible { outline: 2px solid var(--themecolor); outline-offset: 3px; }
+#waifu-tool svg { display: none; }
+#waifu-tool > span::before, #waifu-tool > button::before {
+  content: "";
+  width: 100%; height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+#waifu-tool-home::before { background-image: url(/img/live2d/home.svg); }
+#waifu-tool-switch-model::before { background-image: url(/img/live2d/skin.svg); }
+#waifu-tool-night::before { background-image: url(/img/live2d/night.svg); }
+#waifu-tool-about::before { background-image: url(/img/live2d/info.svg); }
+#waifu-tool-quit::before { background-image: url(/img/live2d/close.svg); }
+#waifu-toggle { z-index: 990; }
+
 @media (max-width: 768px) {
   #waifu, #live2d-widget { display: none !important; }
   .banner { min-height: 480px; }
@@ -554,7 +597,11 @@ const SEARCH_HTML = `<ul class="navbar-nav align-items-lg-center ml-lg-auto" id=
 						</li>
 					</ul>`;
 
-/* ---------- 1.2 Live2D 看板娘（Pio） ---------- */
+/* ---------- 1.2 Live2D 看板娘 ---------- */
+// 模型在 source/_data/argon.yml 的 live2d.model 里改，这里只负责加载。
+// 图例：Potion-Maker/Pio | Potion-Maker/Tia | bilibili-live/22 | bilibili-live/33
+//       ShizukuTalk/shizuku-48 | KantaiCollection/murakumo
+//       HyperdimensionNeptunia/nepgear 等 20 套
 const LIVE2D = `
 <script no-pjax id="live2d-loader">
 (function(){
@@ -562,14 +609,88 @@ const LIVE2D = `
   if (window.innerWidth < 768) return;
   var c = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
   if (c && /(^|-)2g$/.test(c.effectiveType || '')) return;
-  function load(){
-    var s = document.createElement('script');
-    s.src = 'https://fastly.jsdelivr.net/gh/stevenjoezhang/live2d-widget@latest/autoload.js';
-    s.async = true;
-    document.body.appendChild(s);
+
+  var CDN = 'https://fastly.jsdelivr.net/npm/live2d-widgets@0/';
+  var MODEL_CDN = 'https://fastly.jsdelivr.net/gh/fghrsh/live2d_api/';
+  var MODEL = '__LIVE2D_MODEL__';
+  var WIDTH = '__LIVE2D_WIDTH__';
+  var HEIGHT = '__LIVE2D_HEIGHT__';
+
+  if (window.__siteLive2dLoading) return;
+  window.__siteLive2dLoading = true;
+  function resource(url, css) {
+    return new Promise(function(resolve, reject) {
+      var el = document.createElement(css ? 'link' : 'script');
+      if (css) { el.rel = 'stylesheet'; el.href = url; }
+      else { el.src = url; }
+      el.onload = resolve;
+      el.onerror = function() { reject(new Error('看板娘资源加载失败: ' + url)); };
+      document.head.appendChild(el);
+    });
   }
-  if (document.readyState === 'complete') load();
-  else window.addEventListener('load', load);
+  function decorateTools() {
+    var bar = document.getElementById('waifu-tool');
+    if (!bar || bar.dataset.decorated) return;
+    bar.dataset.decorated = '1';
+    var canvas = document.getElementById('live2d');
+    if (canvas) {
+      canvas.style.width = Number(WIDTH) + 'px';
+      canvas.style.height = Number(HEIGHT) + 'px';
+    }
+    function add(id, label, handler, before) {
+      var button = document.createElement('button');
+      button.id = id; button.type = 'button'; button.title = label;
+      button.setAttribute('aria-label', label);
+      button.addEventListener('click', handler);
+      bar.insertBefore(button, before || null);
+    }
+    var skin = document.getElementById('waifu-tool-switch-model');
+    var quit = document.getElementById('waifu-tool-quit');
+    add('waifu-tool-home', '回到首页', function() { location.href = '/'; }, skin);
+    add('waifu-tool-night', '切换明暗主题', function() {
+      if (typeof window.toggleDarkmode === 'function') window.toggleDarkmode();
+    }, quit);
+    add('waifu-tool-about', '关于本站', function() { location.href = '/about/'; }, quit);
+    [[skin, '切换人物'], [quit, '隐藏看板娘']].forEach(function(pair) {
+      var el = pair[0];
+      el.title = pair[1]; el.setAttribute('aria-label', pair[1]);
+      el.setAttribute('role', 'button'); el.tabIndex = 0;
+      el.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); el.click(); }
+      });
+    });
+  }
+  async function start() {
+    try {
+      await resource(CDN + 'waifu.css', true);
+      await resource(CDN + 'live2d.min.js', false);
+      await resource(CDN + 'waifu-tips.js', false);
+      var response = await fetch(MODEL_CDN + 'model_list.json');
+      if (!response.ok) throw new Error('模型列表加载失败');
+      var list = await response.json();
+      var index = list.models.findIndex(function(item) {
+        return Array.isArray(item) ? item.indexOf(MODEL) !== -1 : item === MODEL;
+      });
+      if (index < 0) throw new Error('未找到配置的模型: ' + MODEL);
+      // 组件实际读取数字 modelId，而非 initWidget 的 modelId 参数。
+      // 配置变更时重置默认组，其他时候保留访客自己的选择。
+      if (localStorage.getItem('site-live2d-default') !== MODEL || localStorage.getItem('modelId') === null) {
+        localStorage.setItem('modelId', String(index));
+        localStorage.setItem('modelTexturesId', '0');
+        localStorage.setItem('site-live2d-default', MODEL);
+      }
+      initWidget({ waifuPath: CDN + 'waifu-tips.json', cdnPath: MODEL_CDN,
+        tools: ['switch-model', 'quit'] });
+      decorateTools();
+      // 隐藏状态恢复时，组件才会创建工具栏。
+      var toggle = document.getElementById('waifu-toggle');
+      if (toggle) toggle.addEventListener('click', decorateTools);
+    } catch (error) {
+      console.warn('[看板娘]', error.message);
+    }
+  }
+  if (document.readyState === 'complete') start();
+  else window.addEventListener('load', function() { start(); }, { once: true });
 })();
 </script>
 `;
@@ -1214,7 +1335,15 @@ hexo.extend.filter.register('after_render:html', function (str) {
     const tk = (hexo.theme.config && hexo.theme.config.twikoo) || {};
     const envId = tk.envID && tk.envID.trim() ? tk.envID.trim() : '';
     const script = SCRIPT.replace('__TWIKOO_ENV__', envId);
-    str = str.replace('</body>', script + LIVE2D + '</body>');
+
+    const l2 = (hexo.theme.config && hexo.theme.config.live2d) || {};
+    const l2Script = LIVE2D
+      .replace('__LIVE2D_MODEL__', (l2.model || 'Potion-Maker/Pio').trim())
+      .replace('__LIVE2D_WIDTH__', l2.width || 220)
+      .replace('__LIVE2D_HEIGHT__', l2.height || 400);
+
+    // 回调返回插入内容，避免 JS 字符串里的 $& / $' 被当成替换指令。
+    str = str.replace('</body>', () => script + l2Script + '</body>');
   }
   return str;
 });

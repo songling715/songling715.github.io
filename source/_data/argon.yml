@@ -139,6 +139,23 @@ twikoo:
   envID: 'https://twikoo.songling715.dpdns.org'
   lang: 'zh-CN'
 
+# 看板娘 Live2D
+# model 可选（改完重新构建即可）：
+#   Potion-Maker/Pio         ← 默认组；访客可点击黄色图标切换人物
+#   Potion-Maker/Tia
+#   bilibili-live/22
+#   bilibili-live/33
+#   ShizukuTalk/shizuku-48   ← 蓝发学生
+#   KantaiCollection/murakumo
+#   HyperdimensionNeptunia/nepgear
+#   HyperdimensionNeptunia/neptune_classic
+#   完整列表：https://fastly.jsdelivr.net/gh/fghrsh/live2d_api@master/model_list.json
+live2d:
+  model: 'Potion-Maker/Pio'
+  # 画布保持正方形以免人物拉伸；多模型组内的款式由组件随机挑选
+  width: 300
+  height: 300
+
 # 分析
 baidu_analytics:
   enable: false
